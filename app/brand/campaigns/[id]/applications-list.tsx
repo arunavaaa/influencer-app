@@ -258,11 +258,18 @@ export function ApplicationsList({
                   </div>
                 ) : app.status === 'accepted' ? (
                   app.contracts?.[0]?.id ? (
-                    <Button asChild>
-                      <Link href={`/messages/${app.contracts[0].id}`}>
-                        Message
-                      </Link>
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button asChild variant="outline">
+                        <Link href={`/messages/${app.contracts[0].id}`}>
+                          Message
+                        </Link>
+                      </Button>
+                      <Button asChild>
+                        <Link href={`/contracts/${app.contracts[0].id}`}>
+                          Contract
+                        </Link>
+                      </Button>
+                    </div>
                   ) : (
                     <p className="text-sm text-muted-foreground">
                       Contract created

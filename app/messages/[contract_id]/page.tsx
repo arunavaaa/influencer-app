@@ -92,9 +92,14 @@ export default async function MessagesPage({
               {formatINR(contract.agreed_price_inr)}
             </p>
           </div>
-          <Badge variant="outline" className="capitalize">
-            {contract.status ?? 'pending'}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="capitalize">
+              {contract.status ?? 'pending'}
+            </Badge>
+            <Button asChild variant="outline" size="sm">
+              <Link href={`/contracts/${contract.id}`}>View contract</Link>
+            </Button>
+          </div>
         </div>
       </div>
 

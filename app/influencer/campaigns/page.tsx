@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -81,7 +82,9 @@ export default function InfluencerCampaignsPage() {
 
   const [influencerId, setInfluencerId] = useState<string | null>(null)
   const [campaigns, setCampaigns] = useState<CampaignCard[]>([])
-  const [appliedIds, setAppliedIds] = useState<Set<string>>(new Set())
+  const [applicationByCampaign, setApplicationByCampaign] = useState<
+    Map<string, { status: string; contractId: string | null }>
+  >(new Map())
   const [loading, setLoading] = useState(true)
   const [applyingTo, setApplyingTo] = useState<CampaignCard | null>(null)
   const [submitting, setSubmitting] = useState(false)
@@ -137,8 +140,15 @@ export default function InfluencerCampaignsPage() {
             .returns<CampaignCard[]>(),
           supabase
             .from('applications')
-            .select('campaign_id')
-            .eq('influencer_id', profile.id),
+            .select('campaign_id, status, contracts(id)')
+            .eq('influencer_id', profile.id)
+            .returns<
+              {
+                campaign_id: string
+                status: string
+                contracts: { id: string }[] | null
+              }[]
+            >(),
         ])
 
         if (cancelled) return
@@ -153,9 +163,18 @@ export default function InfluencerCampaignsPage() {
         if (applicationsRes.error) {
           console.error(applicationsRes.error)
         } else {
-          setAppliedIds(
-            new Set((applicationsRes.data ?? []).map((a) => a.campaign_id)),
-          )
+          const apps = applicationsRes.data ?? []
+          const map = new Map<
+            string,
+            { status: string; contractId: string | null }
+          >()
+          for (const a of apps) {
+            map.set(a.campaign_id, {
+              status: a.status,
+              contractId: a.contracts?.[0]?.id ?? null,
+            })
+          }
+          setApplicationByCampaign(map)
         }
       } finally {
         if (!cancelled) setLoading(false)
@@ -195,7 +214,11 @@ export default function InfluencerCampaignsPage() {
         // Unique-constraint error if the user already applied (defensive)
         if (error.code === '23505') {
           toast.warning('You have already applied to this campaign.')
-          setAppliedIds((prev) => new Set(prev).add(applyingTo.id))
+          setApplicationByCampaign((prev) => {
+            const next = new Map(prev)
+            next.set(applyingTo.id, { status: 'pending', contractId: null })
+            return next
+          })
           setApplyingTo(null)
           return
         }
@@ -204,7 +227,11 @@ export default function InfluencerCampaignsPage() {
         return
       }
 
-      setAppliedIds((prev) => new Set(prev).add(applyingTo.id))
+      setApplicationByCampaign((prev) => {
+        const next = new Map(prev)
+        next.set(applyingTo.id, { status: 'pending', contractId: null })
+        return next
+      })
       toast.success('Application submitted — the brand will see it.')
       setApplyingTo(null)
     } finally {
@@ -240,7 +267,7 @@ export default function InfluencerCampaignsPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {visibleCampaigns.map((c) => {
-              const alreadyApplied = appliedIds.has(c.id)
+              const application = applicationByCampaign.get(c.id)
               return (
                 <Card
                   key={c.id}
@@ -286,14 +313,37 @@ export default function InfluencerCampaignsPage() {
                     </div>
                   </CardContent>
                   <CardFooter>
-                    <Button
-                      className="w-full"
-                      disabled={alreadyApplied}
-                      variant={alreadyApplied ? 'outline' : 'default'}
-                      onClick={() => openApply(c)}
-                    >
-                      {alreadyApplied ? 'Applied' : 'Apply'}
-                    </Button>
+                    {application?.status === 'accepted' &&
+                    application.contractId ? (
+                      <Button asChild className="w-full">
+                        <Link href={`/contracts/${application.contractId}`}>
+                          Open contract
+                        </Link>
+                      </Button>
+                    ) : application?.status === 'rejected' ? (
+                      <Button
+                        className="w-full"
+                        variant="outline"
+                        disabled
+                      >
+                        Application rejected
+                      </Button>
+                    ) : application ? (
+                      <Button
+                        className="w-full"
+                        variant="outline"
+                        disabled
+                      >
+                        Applied · awaiting review
+                      </Button>
+                    ) : (
+                      <Button
+                        className="w-full"
+                        onClick={() => openApply(c)}
+                      >
+                        Apply
+                      </Button>
+                    )}
                   </CardFooter>
                 </Card>
               )
