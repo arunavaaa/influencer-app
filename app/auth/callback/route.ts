@@ -24,12 +24,12 @@ export async function GET(request: Request) {
 
       // If influencer, go to influencer dashboard
       if (userData.role === 'influencer') {
-        return NextResponse.redirect(`${origin}/influencer/dashboard`)
+        return NextResponse.redirect(`${origin}/influencer/home`)
       }
 
       // If brand, go to brand dashboard
       if (userData.role === 'brand') {
-        return NextResponse.redirect(`${origin}/brand/dashboard`)
+        return NextResponse.redirect(`${origin}/brand/home`)
       }
     }
   }
