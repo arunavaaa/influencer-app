@@ -97,7 +97,7 @@ export default async function BrandCampaignDetailPage({
   const { data: applications, error: applicationsError } = await supabase
     .from('applications')
     .select(
-      'id, campaign_id, influencer_id, status, cover_note, proposed_price_inr, applied_at, influencer_profiles(id, display_name, city, niche, bio)',
+      'id, campaign_id, influencer_id, status, cover_note, proposed_price_inr, applied_at, influencer_profiles(id, display_name, city, niche, bio), contracts(id)',
     )
     .eq('campaign_id', id)
     .order('applied_at', { ascending: false })

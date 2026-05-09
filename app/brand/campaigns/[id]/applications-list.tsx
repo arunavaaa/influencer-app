@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { toast } from 'sonner'
 
 import { createClient } from '@/lib/supabase/client'
@@ -29,6 +30,7 @@ export type Application = {
     niche: string[] | null
     bio: string | null
   } | null
+  contracts: { id: string }[] | null
 }
 
 const STATUS_VARIANT: Record<
@@ -97,7 +99,7 @@ export function ApplicationsList({
       }
 
       // 2. Insert the contract
-      const { error: contractError } = await supabase
+      const { data: contract, error: contractError } = await supabase
         .from('contracts')
         .insert({
           application_id: app.id,
@@ -108,8 +110,10 @@ export function ApplicationsList({
           non_circumvention_expiry: plus12MonthsIso(),
           status: 'active',
         })
+        .select('id')
+        .single<{ id: string }>()
 
-      if (contractError) {
+      if (contractError || !contract) {
         console.error(contractError)
         // Roll the application back to pending so the brand can retry
         await supabase
@@ -117,13 +121,18 @@ export function ApplicationsList({
           .update({ status: 'pending' })
           .eq('id', app.id)
         toast.error(
-          contractError.message || 'Application accepted, but contract creation failed. Reverted.',
+          contractError?.message ||
+            'Application accepted, but contract creation failed. Reverted.',
         )
         return
       }
 
       setApplications((prev) =>
-        prev.map((a) => (a.id === app.id ? { ...a, status: 'accepted' } : a)),
+        prev.map((a) =>
+          a.id === app.id
+            ? { ...a, status: 'accepted', contracts: [{ id: contract.id }] }
+            : a,
+        ),
       )
       toast.success('Application accepted — contract created.')
     } finally {
@@ -247,11 +256,21 @@ export function ApplicationsList({
                       {isBusy ? 'Working…' : 'Accept'}
                     </Button>
                   </div>
+                ) : app.status === 'accepted' ? (
+                  app.contracts?.[0]?.id ? (
+                    <Button asChild>
+                      <Link href={`/messages/${app.contracts[0].id}`}>
+                        Message
+                      </Link>
+                    </Button>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      Contract created
+                    </p>
+                  )
                 ) : (
                   <p className="text-sm text-muted-foreground capitalize">
-                    {app.status === 'accepted'
-                      ? 'Contract created'
-                      : app.status}
+                    {app.status}
                   </p>
                 )}
               </div>
