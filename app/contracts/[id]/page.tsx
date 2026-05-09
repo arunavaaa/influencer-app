@@ -42,10 +42,13 @@ function formatDate(d: string | null) {
 
 export default async function ContractPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ as?: string }>
 }) {
   const { id } = await params
+  const { as: roleOverride } = await searchParams
 
   // Lazy auto-approval pass on every visit (idempotent).
   await processExpiredSubmissionsForContract(id)
@@ -90,13 +93,23 @@ export default async function ContractPage({
     .order('created_at', { ascending: true })
     .returns<Transaction[]>()
 
-  const role: 'brand' | 'influencer' = isBrand ? 'brand' : 'influencer'
+  // If the same person is on both profiles (common in solo testing),
+  // honor the ?as=influencer / ?as=brand override. Otherwise use whichever
+  // profile actually matches.
+  const dualRole = isBrand && isInfluencer
+  const role: 'brand' | 'influencer' = dualRole
+    ? roleOverride === 'influencer'
+      ? 'influencer'
+      : 'brand'
+    : isBrand
+      ? 'brand'
+      : 'influencer'
 
   return (
     <div className="min-h-screen bg-background">
       <div className="border-b px-8 py-6">
         <Button variant="ghost" size="sm" asChild className="mb-3 -ml-3">
-          <Link href={isBrand ? '/brand/campaigns' : '/influencer/campaigns'}>
+          <Link href={role === 'brand' ? '/brand/campaigns' : '/influencer/campaigns'}>
             ← Back
           </Link>
         </Button>
@@ -112,7 +125,19 @@ export default async function ContractPage({
               {' · '}signed {formatDate(contract.created_at)}
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            {dualRole && (
+              <Button asChild variant="ghost" size="sm">
+                <Link
+                  href={`/contracts/${contract.id}${role === 'brand' ? '?as=influencer' : ''}`}
+                >
+                  View as {role === 'brand' ? 'influencer' : 'brand'}
+                </Link>
+              </Button>
+            )}
+            <Badge variant="outline" className="capitalize">
+              {role} view
+            </Badge>
             <Badge variant="outline" className="capitalize">
               {contract.status ?? 'pending'}
             </Badge>
