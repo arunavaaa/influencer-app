@@ -1,182 +1,83 @@
 import Link from 'next/link'
-import {
-  ArrowRightIcon,
-  BadgeCheckIcon,
-  HandshakeIcon,
-  ShieldCheckIcon,
-  SparklesIcon,
-  UploadCloudIcon,
-  UsersRoundIcon,
-  WalletIcon,
-} from 'lucide-react'
-
-import { Button } from '@/components/ui/button'
+import { createClient } from '@/lib/supabase/server'
 
 export const metadata = {
-  title: "India's Influencer Marketplace — Crayon",
+  title: "Crayon — India's Influencer Marketplace",
   description:
-    'Connect with verified creators. Pay securely. Grow faster. Crayon is the two-sided marketplace for India brands and influencers.',
+    'Find and hire verified Indian creators. Pay securely via escrow. GST invoices included. The Collabstr for India.',
 }
 
-export default function Landing() {
+export default async function Landing() {
   return (
-    <div className="bg-[#FBF8F3] text-[#1B1814]">
+    <div className="text-[#121511]" style={{ fontFamily: 'Inter, Arial, sans-serif' }}>
       <Hero />
-      <StatsStrip />
-      <HowItWorks
-        title="For brands"
-        eyebrow="Get content shipped"
-        steps={[
-          {
-            number: '01',
-            title: 'Post a campaign',
-            body:
-              'Share the brief, set a budget, and pick the niche, platform, and creator tier you need.',
-            icon: SparklesIcon,
-          },
-          {
-            number: '02',
-            title: 'Review applications',
-            body:
-              'Vetted creators apply with their pitch and proposed price. Pick the right ones, message in-app.',
-            icon: UsersRoundIcon,
-          },
-          {
-            number: '03',
-            title: 'Pay securely',
-            body:
-              'Funds sit in escrow until you approve the content. Approve, request revisions, or release the payout — your call.',
-            icon: ShieldCheckIcon,
-          },
-        ]}
-        ctaLabel="I'm a Brand"
-        accent="brand"
-      />
-      <HowItWorks
-        title="For influencers"
-        eyebrow="Get paid for your work"
-        steps={[
-          {
-            number: '01',
-            title: 'Create your profile',
-            body:
-              'Show your niche, packages, and best work. Set your rates per format and platform.',
-            icon: BadgeCheckIcon,
-          },
-          {
-            number: '02',
-            title: 'Apply to campaigns',
-            body:
-              'Browse open briefs from verified Indian brands. Pitch the ones that fit your audience.',
-            icon: HandshakeIcon,
-          },
-          {
-            number: '03',
-            title: 'Get paid',
-            body:
-              'Submit content. Brand has 72 hours to review, or it auto-approves and your payout is released.',
-            icon: WalletIcon,
-          },
-        ]}
-        ctaLabel="Join as Influencer"
-        accent="influencer"
-      />
-      <FinalCta />
+      <StatsBar />
+      <HowItWorks />
+      <FeaturedCreators />
+      <Testimonials />
+      <FooterCta />
       <Footer />
     </div>
   )
 }
 
-/* ---------- HERO ---------- */
-
+/* ──────────────────────────────────────────────
+   HERO
+────────────────────────────────────────────── */
 function Hero() {
   return (
-    <section className="relative overflow-hidden">
-      {/* warm radial gradient backdrop */}
-      <div
-        aria-hidden
-        className="absolute inset-0 -z-10"
-        style={{
-          background:
-            'radial-gradient(ellipse 80% 60% at 50% -20%, #FFE5D0 0%, transparent 60%), radial-gradient(ellipse 60% 50% at 90% 40%, #FCE4DA 0%, transparent 70%), #FBF8F3',
-        }}
-      />
-      <div
-        aria-hidden
-        className="absolute inset-x-0 bottom-0 -z-10 h-px bg-gradient-to-r from-transparent via-[#1B1814]/15 to-transparent"
-      />
-
-      <div className="max-w-6xl mx-auto px-6 sm:px-8 pt-24 sm:pt-32 pb-24 sm:pb-32">
-        <div className="flex flex-col items-center text-center">
-          <span className="inline-flex items-center gap-2 rounded-full border border-[#1B1814]/15 bg-white/70 backdrop-blur px-3 py-1 text-xs font-medium text-[#1B1814]/80">
-            <span className="size-1.5 rounded-full bg-[#E8632A]" />
-            Built for India · Mumbai-hosted
-          </span>
-
+    <section className="bg-[#163300] text-white py-[80px] px-5 md:px-[70px]">
+      <div className="max-w-[1360px] mx-auto">
+        <div className="max-w-[600px] mx-auto text-center">
           <h1
-            className="mt-6 text-5xl sm:text-6xl md:text-7xl tracking-tight leading-[1.05] font-[family-name:var(--font-fraunces)]"
-            style={{ fontVariationSettings: '"opsz" 144, "SOFT" 30' }}
+            className="text-[48px] md:text-[72px] font-black leading-[1] uppercase tracking-tight text-[#9FE870]"
           >
-            India&rsquo;s Influencer
-            <br />
-            <em className="not-italic font-light">Marketplace.</em>
+            India&rsquo;s Influencer Marketplace
           </h1>
-
-          <p className="mt-6 max-w-xl text-lg sm:text-xl text-[#4F4942] leading-relaxed">
-            Connect with verified creators. Pay securely. Grow faster.
+          <p className="mt-6 text-[18px] text-white/80 leading-relaxed">
+            Find verified Indian creators on Instagram, YouTube, Moj &amp; ShareChat.
+            Pay securely via escrow. GST invoices included.
           </p>
 
-          <div className="mt-9 flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
-            <Button
-              asChild
-              size="lg"
-              className="bg-[#1B1814] hover:bg-[#2A2520] text-white rounded-full h-12 px-7 text-base font-medium"
+          {/* Search bar */}
+          <div className="mt-10 flex flex-col sm:flex-row gap-3 bg-white/10 border border-white/20 rounded-[24px] p-2">
+            <select
+              className="bg-transparent text-white text-[15px] font-medium px-4 py-3 rounded-[20px] focus:outline-none focus:bg-white/10 cursor-pointer flex-shrink-0"
+              defaultValue=""
             >
-              <Link href="/login">
-                I&rsquo;m a Brand
-                <ArrowRightIcon className="size-4" />
-              </Link>
-            </Button>
-            <Button
-              asChild
-              variant="outline"
-              size="lg"
-              className="rounded-full h-12 px-7 text-base font-medium border-[#1B1814]/20 bg-white/80 hover:bg-white"
+              <option value="" className="text-black bg-white">Any Platform</option>
+              <option value="instagram" className="text-black bg-white">Instagram</option>
+              <option value="youtube" className="text-black bg-white">YouTube</option>
+              <option value="moj" className="text-black bg-white">Moj</option>
+              <option value="sharechat" className="text-black bg-white">ShareChat</option>
+            </select>
+            <input
+              type="text"
+              placeholder="Search by niche, category or keyword..."
+              className="flex-1 bg-transparent text-white placeholder-white/50 text-[15px] px-4 py-3 focus:outline-none"
+            />
+            <Link
+              href="/brand/discover"
+              className="bg-[#9FE870] text-[#163300] font-bold text-[15px] px-8 py-3 rounded-[20px] whitespace-nowrap hover:bg-[#8fdc60] transition-colors"
             >
-              <Link href="/login">Join as Influencer</Link>
-            </Button>
+              Search
+            </Link>
           </div>
 
-          <p className="mt-5 text-xs text-[#1B1814]/50">
-            Free to join. No commission until you complete a deal.
-          </p>
-        </div>
-
-        {/* Floating campaign card mockup */}
-        <div className="relative mt-20 sm:mt-24 max-w-4xl mx-auto">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <CampaignMock
-              brand="Mamaearth"
-              title="Summer skincare reel"
-              budget="₹50,000"
-              tags={['Beauty', 'Reel']}
-              tilt="-rotate-1"
-            />
-            <CampaignMock
-              brand="Boat"
-              title="Headphones unboxing"
-              budget="₹35,000"
-              tags={['Tech', 'YouTube']}
-              tilt=""
-              featured
-            />
-            <CampaignMock
-              brand="Nykaa"
-              title="GRWM Festive look"
-              budget="₹80,000"
-              tags={['Fashion', 'Reel']}
-              tilt="rotate-1"
-            />
+          {/* CTA buttons */}
+          <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+            <Link
+              href="/login"
+              className="bg-[#9FE870] text-[#163300] font-bold text-[16px] px-10 py-4 rounded-full hover:bg-[#8fdc60] transition-colors"
+            >
+              I&rsquo;m a Brand — Find Creators
+            </Link>
+            <Link
+              href="/login"
+              className="bg-transparent text-white border-2 border-white/30 font-bold text-[16px] px-10 py-4 rounded-full hover:bg-white/10 transition-colors"
+            >
+              Join as Influencer
+            </Link>
           </div>
         </div>
       </div>
@@ -184,74 +85,23 @@ function Hero() {
   )
 }
 
-function CampaignMock({
-  brand,
-  title,
-  budget,
-  tags,
-  tilt,
-  featured,
-}: {
-  brand: string
-  title: string
-  budget: string
-  tags: string[]
-  tilt: string
-  featured?: boolean
-}) {
-  return (
-    <div
-      className={`bg-white border border-[#1B1814]/8 rounded-2xl p-5 shadow-[0_2px_8px_-2px_rgba(27,24,20,0.04),0_24px_48px_-12px_rgba(27,24,20,0.08)] ${tilt} ${featured ? 'sm:-translate-y-3 sm:scale-[1.03]' : ''}`}
-    >
-      <div className="flex items-start justify-between mb-4">
-        <div className="size-10 rounded-full bg-[#1B1814]/8 flex items-center justify-center text-sm font-semibold">
-          {brand[0]}
-        </div>
-        {featured && (
-          <span className="text-[10px] uppercase tracking-wider font-semibold text-[#E8632A]">
-            New
-          </span>
-        )}
-      </div>
-      <p className="text-xs text-[#4F4942] mb-1">{brand}</p>
-      <h3 className="font-medium text-[15px] mb-3 leading-snug">{title}</h3>
-      <div className="flex items-center justify-between">
-        <div className="flex gap-1.5">
-          {tags.map((t) => (
-            <span
-              key={t}
-              className="text-[11px] px-2 py-0.5 rounded-full bg-[#FBF8F3] text-[#1B1814]/70"
-            >
-              {t}
-            </span>
-          ))}
-        </div>
-        <span className="text-sm font-semibold">{budget}</span>
-      </div>
-    </div>
-  )
-}
-
-/* ---------- STATS ---------- */
-
-function StatsStrip() {
+/* ──────────────────────────────────────────────
+   STATS BAR
+────────────────────────────────────────────── */
+function StatsBar() {
   const stats = [
-    { value: '500+', label: 'Verified Influencers' },
-    { value: '₹0', label: 'Commission to start' },
-    { value: 'Escrow', label: 'Protected payouts' },
+    { value: '10,000+', label: 'Verified Creators' },
+    { value: '₹0', label: 'to Browse' },
+    { value: 'Escrow', label: 'Protected Payments' },
+    { value: 'GST', label: 'Invoices Included' },
   ]
   return (
-    <section className="bg-[#1B1814] text-white py-12 sm:py-14">
-      <div className="max-w-5xl mx-auto px-6 sm:px-8 grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-white/10">
+    <section className="bg-white border-b border-[#E8E8E8] py-[50px] px-5 md:px-[70px]">
+      <div className="max-w-[1360px] mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
         {stats.map((s) => (
-          <div key={s.label} className="px-4 py-6 sm:py-2 text-center">
-            <p
-              className="text-4xl sm:text-5xl font-[family-name:var(--font-fraunces)] tracking-tight"
-              style={{ fontVariationSettings: '"opsz" 144' }}
-            >
-              {s.value}
-            </p>
-            <p className="text-sm text-white/60 mt-1">{s.label}</p>
+          <div key={s.label} className="text-center">
+            <p className="text-[37px] font-black text-[#163300] leading-tight">{s.value}</p>
+            <p className="text-[16px] text-[#6A6C6A] mt-1">{s.label}</p>
           </div>
         ))}
       </div>
@@ -259,140 +109,70 @@ function StatsStrip() {
   )
 }
 
-/* ---------- HOW IT WORKS ---------- */
-
-type Step = {
-  number: string
-  title: string
-  body: string
-  icon: React.ComponentType<{ className?: string }>
-}
-
-function HowItWorks({
-  title,
-  eyebrow,
-  steps,
-  ctaLabel,
-  accent,
-}: {
-  title: string
-  eyebrow: string
-  steps: Step[]
-  ctaLabel: string
-  accent: 'brand' | 'influencer'
-}) {
+/* ──────────────────────────────────────────────
+   HOW IT WORKS
+────────────────────────────────────────────── */
+function HowItWorks() {
   return (
-    <section className="py-24 sm:py-32 px-6 sm:px-8">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-14">
+    <section className="bg-[#EDEFEB] py-[80px] px-5 md:px-[70px]">
+      <div className="max-w-[1360px] mx-auto">
+        <div className="grid md:grid-cols-2 gap-16">
+          {/* For Brands */}
           <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-[#E8632A] font-medium mb-3">
-              {eyebrow}
-            </p>
-            <h2
-              className="text-4xl sm:text-5xl font-[family-name:var(--font-fraunces)] tracking-tight"
-              style={{ fontVariationSettings: '"opsz" 144, "SOFT" 30' }}
-            >
-              {title}
+            <p className="text-[12px] font-bold uppercase tracking-[0.18em] text-[#163300] mb-4">For Brands</p>
+            <h2 className="text-[37px] font-black text-[#121511] leading-tight mb-10">
+              Get Content Shipped
             </h2>
-          </div>
-          <Button
-            asChild
-            variant="outline"
-            className="rounded-full self-start sm:self-end border-[#1B1814]/20 bg-white"
-          >
-            <Link href="/login">
-              {ctaLabel}
-              <ArrowRightIcon className="size-4" />
-            </Link>
-          </Button>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {steps.map((s) => {
-            const Icon = s.icon
-            return (
-              <div
-                key={s.number}
-                className="group relative rounded-2xl border border-[#1B1814]/10 bg-white p-7 hover:border-[#1B1814]/20 transition-colors"
-              >
-                <div className="flex items-start justify-between mb-8">
-                  <div className="size-11 rounded-xl bg-[#1B1814] text-white flex items-center justify-center">
-                    <Icon className="size-5" />
+            <div className="flex flex-col gap-8">
+              {[
+                { n: '01', title: 'Post a Campaign', body: 'Share your brief, set your budget, and define niche, platform, and creator tier.' },
+                { n: '02', title: 'Review Applications', body: 'Vetted creators apply with their pitch and price. Pick the right ones, chat in-app.' },
+                { n: '03', title: 'Pay Securely', body: 'Funds sit in escrow until you approve content. Auto-approves after 72h if no response.' },
+              ].map((s) => (
+                <div key={s.n} className="flex gap-6 items-start">
+                  <span className="text-[48px] font-black text-[#9FE870] leading-none w-[60px] flex-shrink-0">{s.n}</span>
+                  <div>
+                    <h3 className="text-[20px] font-bold text-[#121511] mb-1">{s.title}</h3>
+                    <p className="text-[16px] text-[#6A6C6A] leading-relaxed">{s.body}</p>
                   </div>
-                  <span
-                    className="text-3xl font-[family-name:var(--font-fraunces)] text-[#1B1814]/15"
-                    style={{ fontVariationSettings: '"opsz" 144' }}
-                  >
-                    {s.number}
-                  </span>
                 </div>
-                <h3 className="text-xl font-medium mb-2 tracking-tight">
-                  {s.title}
-                </h3>
-                <p className="text-[15px] text-[#4F4942] leading-relaxed">
-                  {s.body}
-                </p>
-                {accent === 'brand' && (
-                  <div className="absolute inset-x-7 -bottom-px h-px bg-gradient-to-r from-transparent via-[#E8632A]/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                )}
-              </div>
-            )
-          })}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-/* ---------- FINAL CTA ---------- */
-
-function FinalCta() {
-  return (
-    <section className="px-6 sm:px-8 pb-24">
-      <div className="max-w-6xl mx-auto rounded-3xl bg-[#1B1814] text-white p-10 sm:p-16 relative overflow-hidden">
-        <div
-          aria-hidden
-          className="absolute inset-0"
-          style={{
-            background:
-              'radial-gradient(ellipse 50% 70% at 90% 50%, rgba(232, 99, 42, 0.25) 0%, transparent 60%)',
-          }}
-        />
-        <div className="relative max-w-2xl">
-          <h2
-            className="text-4xl sm:text-5xl md:text-6xl font-[family-name:var(--font-fraunces)] tracking-tight leading-[1.05]"
-            style={{ fontVariationSettings: '"opsz" 144, "SOFT" 30' }}
-          >
-            Ship your next campaign{' '}
-            <em className="not-italic font-light text-white/85">this week.</em>
-          </h2>
-          <p className="mt-5 text-lg text-white/75 leading-relaxed">
-            Post your first brief in under 5 minutes. Pay only when you&rsquo;re
-            happy with the content.
-          </p>
-          <div className="mt-8 flex flex-col sm:flex-row gap-3">
-            <Button
-              asChild
-              size="lg"
-              className="bg-[#E8632A] hover:bg-[#D5571F] text-white rounded-full h-12 px-7 text-base font-medium"
+              ))}
+            </div>
+            <Link
+              href="/login"
+              className="mt-10 inline-block bg-[#163300] text-[#9FE870] font-bold text-[16px] px-10 py-4 rounded-full hover:bg-[#1f4a00] transition-colors"
             >
-              <Link href="/login">
-                I&rsquo;m a Brand
-                <ArrowRightIcon className="size-4" />
-              </Link>
-            </Button>
-            <Button
-              asChild
-              variant="outline"
-              size="lg"
-              className="rounded-full h-12 px-7 text-base font-medium bg-transparent border-white/25 text-white hover:bg-white/10 hover:text-white"
+              I&rsquo;m a Brand →
+            </Link>
+          </div>
+
+          {/* For Influencers */}
+          <div>
+            <p className="text-[12px] font-bold uppercase tracking-[0.18em] text-[#163300] mb-4">For Influencers</p>
+            <h2 className="text-[37px] font-black text-[#121511] leading-tight mb-10">
+              Get Paid for Your Work
+            </h2>
+            <div className="flex flex-col gap-8">
+              {[
+                { n: '01', title: 'Create Your Profile', body: 'Show your niche, packages, and best content. Set your rates per format and platform.' },
+                { n: '02', title: 'Apply to Campaigns', body: 'Browse open briefs from verified Indian brands. Pitch the ones that fit your audience.' },
+                { n: '03', title: 'Get Paid', body: 'Submit content. Brand reviews in 72h, or it auto-approves and your payout is released.' },
+              ].map((s) => (
+                <div key={s.n} className="flex gap-6 items-start">
+                  <span className="text-[48px] font-black text-[#9FE870] leading-none w-[60px] flex-shrink-0">{s.n}</span>
+                  <div>
+                    <h3 className="text-[20px] font-bold text-[#121511] mb-1">{s.title}</h3>
+                    <p className="text-[16px] text-[#6A6C6A] leading-relaxed">{s.body}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <Link
+              href="/login"
+              className="mt-10 inline-block bg-[#9FE870] text-[#163300] font-bold text-[16px] px-10 py-4 rounded-full hover:bg-[#8fdc60] transition-colors"
             >
-              <Link href="/login">
-                <UploadCloudIcon className="size-4" />
-                Join as Influencer
-              </Link>
-            </Button>
+              Join as Influencer →
+            </Link>
           </div>
         </div>
       </div>
@@ -400,31 +180,224 @@ function FinalCta() {
   )
 }
 
-/* ---------- FOOTER ---------- */
+/* ──────────────────────────────────────────────
+   FEATURED CREATORS (live from Supabase)
+────────────────────────────────────────────── */
+async function FeaturedCreators() {
+  const supabase = await createClient()
+  const { data: creators } = await supabase
+    .from('influencer_profiles')
+    .select('id, display_name, city, niche, reputation_score')
+    .eq('is_profile_live', true)
+    .limit(6)
 
+  const AVATAR_COLORS = [
+    'bg-[#9FE870] text-[#163300]',
+    'bg-[#163300] text-[#9FE870]',
+    'bg-[#EDEFEB] text-[#163300]',
+    'bg-[#121511] text-white',
+    'bg-[#9FE870] text-[#163300]',
+    'bg-[#163300] text-[#9FE870]',
+  ]
+
+  return (
+    <section className="bg-white py-[80px] px-5 md:px-[70px]">
+      <div className="max-w-[1360px] mx-auto">
+        <div className="flex items-end justify-between mb-10">
+          <div>
+            <p className="text-[12px] font-bold uppercase tracking-[0.18em] text-[#163300] mb-2">Featured</p>
+            <h2 className="text-[37px] font-black text-[#121511]">Top Creators</h2>
+          </div>
+          <Link
+            href="/brand/discover"
+            className="text-[16px] font-semibold text-[#163300] hover:text-[#9FE870] transition-colors"
+          >
+            See All →
+          </Link>
+        </div>
+
+        {creators && creators.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[30px]">
+            {creators.map((creator, i) => (
+              <Link key={creator.id} href={`/influencer/${creator.id}`}>
+                <div className="bg-white border border-[#E8E8E8] rounded-[24px] p-[20px] hover:-translate-y-1 transition-transform cursor-pointer group">
+                  {/* Avatar */}
+                  <div className="relative mb-4">
+                    <div className={`w-16 h-16 rounded-full flex items-center justify-center text-2xl font-black ${AVATAR_COLORS[i % AVATAR_COLORS.length]}`}>
+                      {creator.display_name?.[0]?.toUpperCase() || '?'}
+                    </div>
+                  </div>
+                  <h3 className="text-[20px] font-bold text-[#121511] tracking-tight mb-0.5">
+                    {creator.display_name}
+                  </h3>
+                  <p className="text-[14px] text-[#6A6C6A] mb-3">{creator.city || 'India'}</p>
+                  <div className="flex flex-wrap gap-1.5 mb-4">
+                    {creator.niche?.slice(0, 3).map((n: string) => (
+                      <span key={n} className="text-[12px] px-3 py-1 bg-[#EDEFEB] text-[#163300] font-medium rounded-full">
+                        {n}
+                      </span>
+                    ))}
+                  </div>
+                  {creator.reputation_score > 0 && (
+                    <div className="flex items-center gap-1 text-[14px] text-[#6A6C6A]">
+                      <span className="text-[#9FE870]">★</span>
+                      <span className="font-semibold text-[#121511]">{creator.reputation_score}</span>
+                      <span>reputation score</span>
+                    </div>
+                  )}
+                  <div className="mt-4 pt-4 border-t border-[#E8E8E8]">
+                    <span className="text-[16px] font-bold text-[#163300] group-hover:text-[#9FE870] transition-colors">
+                      View Profile →
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-16">
+            <p className="text-[#6A6C6A] text-[18px]">Creators are joining every day.</p>
+            <Link
+              href="/login"
+              className="mt-6 inline-block bg-[#9FE870] text-[#163300] font-bold text-[16px] px-10 py-4 rounded-full hover:bg-[#8fdc60] transition-colors"
+            >
+              Join as a Creator
+            </Link>
+          </div>
+        )}
+      </div>
+    </section>
+  )
+}
+
+/* ──────────────────────────────────────────────
+   TESTIMONIALS
+────────────────────────────────────────────── */
+function Testimonials() {
+  const testimonials = [
+    {
+      quote: "Found 3 Instagram creators in 2 days. The escrow gave us peace of mind — we only paid after approving the content.",
+      name: "Priya Mehta",
+      role: "Marketing Head, D2C Brand",
+    },
+    {
+      quote: "Finally a platform that understands Indian influencers. Got paid within 72 hours, no negotiation hassle.",
+      name: "Rahul Sharma",
+      role: "Instagram Creator, 180K followers",
+    },
+    {
+      quote: "GST invoices auto-generated for every order. Our finance team loves it. Campaign management is 10x faster now.",
+      name: "Ankit Jain",
+      role: "Founder, Bangalore D2C Brand",
+    },
+  ]
+
+  return (
+    <section className="bg-[#163300] py-[80px] px-5 md:px-[70px]">
+      <div className="max-w-[1360px] mx-auto">
+        <h2 className="text-[48px] md:text-[60px] font-black text-[#9FE870] uppercase text-center mb-12 leading-tight">
+          Don&rsquo;t Just Take Our Word For It
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-[20px]">
+          {testimonials.map((t, i) => (
+            <div key={i} className="bg-white rounded-[24px] p-10">
+              <p className="text-[18px] text-[#121511] leading-relaxed mb-8">&ldquo;{t.quote}&rdquo;</p>
+              <div>
+                <p className="font-bold text-[16px] text-[#163300]">{t.name}</p>
+                <p className="text-[14px] text-[#6A6C6A]">{t.role}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/* ──────────────────────────────────────────────
+   FOOTER CTA
+────────────────────────────────────────────── */
+function FooterCta() {
+  return (
+    <section className="bg-[#163300] py-[80px] px-5 md:px-[70px] border-t border-white/10">
+      <div className="max-w-[1360px] mx-auto text-center">
+        <h2 className="text-[48px] md:text-[60px] font-black text-white uppercase leading-tight mb-6">
+          Find &amp; Hire Influencers
+        </h2>
+        <p className="text-[18px] text-white/70 mb-10 max-w-[500px] mx-auto">
+          Post your first campaign in under 5 minutes. Pay only when you&rsquo;re happy with the content.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <Link
+            href="/login"
+            className="bg-[#9FE870] text-[#163300] font-bold text-[18px] px-12 py-5 rounded-full hover:bg-[#8fdc60] transition-colors"
+          >
+            Search Influencers
+          </Link>
+          <Link
+            href="/login"
+            className="bg-transparent text-white border-2 border-white/30 font-bold text-[18px] px-12 py-5 rounded-full hover:bg-white/10 transition-colors"
+          >
+            Join as Creator
+          </Link>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/* ──────────────────────────────────────────────
+   FOOTER
+────────────────────────────────────────────── */
 function Footer() {
   return (
-    <footer className="border-t border-[#1B1814]/10 bg-[#FBF8F3]">
-      <div className="max-w-6xl mx-auto px-6 sm:px-8 py-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-        <div className="flex items-center gap-3">
-          <span
-            className="text-xl font-[family-name:var(--font-fraunces)]"
-            style={{ fontVariationSettings: '"opsz" 144' }}
-          >
-            Crayon
-          </span>
-          <span className="text-sm text-[#1B1814]/50">
-            India&rsquo;s influencer marketplace
-          </span>
+    <footer className="bg-white border-t border-[#E8E8E8] px-5 md:px-[70px]">
+      <div className="max-w-[1360px] mx-auto py-[80px]">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-12">
+          <div>
+            <p className="text-[16px] font-bold text-[#0E0F0C] mb-4">Resources</p>
+            <ul className="flex flex-col gap-3">
+              {['Pricing', 'Blog', 'Resource Hub', '2026 Influencer Report', 'Brand Stories'].map((l) => (
+                <li key={l}><Link href="/login" className="text-[16px] text-[#6A6C6A] hover:text-[#163300] transition-colors">{l}</Link></li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <p className="text-[16px] font-bold text-[#0E0F0C] mb-4">Tools</p>
+            <ul className="flex flex-col gap-3">
+              {['Price Calculator', 'Engagement Rate Calculator', 'Campaign Brief Template', 'Influencer Contract Template'].map((l) => (
+                <li key={l}><Link href="/login" className="text-[16px] text-[#6A6C6A] hover:text-[#163300] transition-colors">{l}</Link></li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <p className="text-[16px] font-bold text-[#0E0F0C] mb-4">Discover</p>
+            <ul className="flex flex-col gap-3">
+              {['Find Influencers', 'Top Creators', 'Search by Platform', 'Search by Niche'].map((l) => (
+                <li key={l}><Link href="/brand/discover" className="text-[16px] text-[#6A6C6A] hover:text-[#163300] transition-colors">{l}</Link></li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <p className="text-[16px] font-bold text-[#0E0F0C] mb-4">Support</p>
+            <ul className="flex flex-col gap-3">
+              {['Contact Us', 'How It Works', 'FAQ'].map((l) => (
+                <li key={l}><Link href="/login" className="text-[16px] text-[#6A6C6A] hover:text-[#163300] transition-colors">{l}</Link></li>
+              ))}
+            </ul>
+            <div className="mt-8">
+              <p className="text-[20px] font-black text-[#163300]">Crayon</p>
+              <p className="text-[14px] text-[#6A6C6A] mt-1">India&rsquo;s Influencer Marketplace</p>
+            </div>
+          </div>
         </div>
-        <div className="flex items-center gap-6 text-sm text-[#1B1814]/60">
-          <Link href="/login" className="hover:text-[#1B1814] transition-colors">
-            Sign in
-          </Link>
-          <span>·</span>
-          <span>
-            © {new Date().getFullYear()} Crayon. All rights reserved.
-          </span>
+        <div className="border-t border-[#E8E8E8] pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-[14px] text-[#6A6C6A]">
+          <span>© {new Date().getFullYear()} Crayon. All rights reserved.</span>
+          <div className="flex gap-6">
+            <Link href="/login" className="hover:text-[#163300] transition-colors">Privacy</Link>
+            <Link href="/login" className="hover:text-[#163300] transition-colors">Terms</Link>
+            <Link href="/login" className="hover:text-[#163300] transition-colors">Sitemap</Link>
+          </div>
         </div>
       </div>
     </footer>

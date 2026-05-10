@@ -1,3 +1,9 @@
+## Design & Feature Reference
+- Before writing ANY UI code, read WISE_DESIGN_SYSTEM.pdf for the complete design system
+- Before building ANY feature, read COLLABSTR_REFERENCE.pdf for feature parity reference
+- Design target: Wise.com visual style (dark green #163300, lime green #9FE870, Inter font, 24px card radius)
+- Functional target: Collabstr.com features adapted for India (₹ pricing, Razorpay, GST, regional platforms)
+
 # Project: Influencer Marketplace (India)
 
 A two-sided influencer marketing marketplace connecting brands with influencers across India.

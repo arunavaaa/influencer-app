@@ -7,9 +7,9 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-inter);
   --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-heading: var(--font-inter);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -39,82 +39,114 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  --radius-sm: calc(var(--radius) * 0.5);
+  --radius-md: 12px;
+  --radius-lg: 24px;
+  --radius-xl: 24px;
+  --radius-2xl: 24px;
+  --radius-3xl: 24px;
+  --radius-4xl: 24px;
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-}
+  /* === WISE DESIGN SYSTEM COLORS === */
+  --color-primary:        #163300;
+  --color-accent:         #9FE870;
+  --color-text-primary:   #121511;
+  --color-text-secondary: #0E0F0C;
+  --color-text-muted:     #6A6C6A;
+  --color-white:          #FFFFFF;
+  --color-bg-muted:       #EDEFEB;
+  --color-bg-cream:       #FAF9F5;
+  --color-bg-dark:        #163300;
+  --color-surface:        #FFFFFF;
+  --color-border-light:   #D0D0D0;
+  --color-border-subtle:  #E8E8E8;
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  /* Typography */
+  --font-display: inter, Arial, sans-serif;
+  --font-body:    inter, Arial, sans-serif;
+
+  --text-xs:       12px;
+  --text-sm:       14px;
+  --text-base:     16px;
+  --text-lg:       18px;
+  --text-xl:       20px;
+  --text-2xl:      25px;
+  --text-3xl:      30px;
+  --text-4xl:      37px;
+  --text-display:  80px;
+
+  /* Spacing (8px grid) */
+  --space-1:   4px;
+  --space-2:   8px;
+  --space-3:   12px;
+  --space-4:   16px;
+  --space-5:   20px;
+  --space-6:   24px;
+  --space-7:   32px;
+  --space-8:   40px;
+  --space-9:   50px;
+  --space-10:  60px;
+  --space-11:  70px;
+  --space-12:  80px;
+  --space-13:  100px;
+
+  /* Border Radius */
+  --radius-none:      0px;
+  --radius-sm:        3px;
+  --radius-md:        12px;
+  --radius-lg:        24px;
+  --radius-circle:    50%;
+  --radius-full:      100%;
+  --radius-pill-left: 100px 0 0 100px;
+
+  /* Transitions */
+  --transition-fast:   0.3s ease-out;
+  --transition-smooth: 0.3s ease-in-out;
+  --transition-eased:  0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Layout */
+  --container-max:     1360px;
+  --container-padding: 70px;
+  --card-width:        290px;
+  --card-gap:          30px;
+
+  /* === shadcn/ui token overrides to match Wise palette === */
+  --background:            #FFFFFF;
+  --foreground:            #121511;
+  --card:                  #FFFFFF;
+  --card-foreground:       #121511;
+  --popover:               #FFFFFF;
+  --popover-foreground:    #121511;
+  --primary:               #163300;
+  --primary-foreground:    #FFFFFF;
+  --secondary:             #EDEFEB;
+  --secondary-foreground:  #121511;
+  --muted:                 #EDEFEB;
+  --muted-foreground:      #6A6C6A;
+  --accent:                #9FE870;
+  --accent-foreground:     #163300;
+  --destructive:           oklch(0.577 0.245 27.325);
+  --border:                #E8E8E8;
+  --input:                 #E8E8E8;
+  --ring:                  #9FE870;
+  --radius:                1.5rem;
+
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+
+  --sidebar:                    #EDEFEB;
+  --sidebar-foreground:         #121511;
+  --sidebar-primary:            #163300;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent:             #9FE870;
+  --sidebar-accent-foreground:  #163300;
+  --sidebar-border:             #E8E8E8;
+  --sidebar-ring:               #9FE870;
 }
 
 @layer base {
@@ -123,8 +155,127 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: inter, Arial, sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.47;
+    color: #121511;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
   html {
-    @apply font-sans;
+    font-family: inter, Arial, sans-serif;
   }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: inter, Arial, sans-serif;
+    font-weight: 600;
+    color: #121511;
+  }
+}
+
+/* === WISE COMPONENT UTILITIES === */
+
+/* Creator / Job Card */
+.wise-card {
+  background: #FFFFFF;
+  border-radius: 24px;
+  padding: 20px;
+  border: none;
+  box-shadow: none;
+  transition: transform 0.3s ease-out;
+}
+.wise-card:hover {
+  transform: translateY(-2px);
+}
+
+/* Primary CTA button — lime green pill */
+.btn-primary {
+  background: #9FE870;
+  color: #163300;
+  border-radius: 9999px;
+  padding: 12px 42px;
+  font-family: inter, Arial, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 1.1px;
+  border: none;
+  display: inline-block;
+  text-decoration: none;
+  transition: background 0.3s ease-in-out;
+  cursor: pointer;
+}
+.btn-primary:hover {
+  background: #8fdc60;
+}
+
+/* Outline pill button */
+.btn-outline {
+  background: transparent;
+  color: #163300;
+  border-radius: 9999px;
+  padding: 12px 42px;
+  font-family: inter, Arial, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  border: 2px solid #163300;
+  display: inline-block;
+  text-decoration: none;
+  transition: all 0.3s ease-in-out;
+  cursor: pointer;
+}
+.btn-outline:hover {
+  background: #163300;
+  color: #9FE870;
+}
+
+/* Section container */
+.wise-container {
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 0 70px;
+}
+
+@media (max-width: 768px) {
+  .wise-container {
+    padding: 0 20px;
+  }
+}
+
+/* Full-bleed dark section */
+.section-dark {
+  background: #163300;
+  color: #FFFFFF;
+}
+
+/* Testimonial card */
+.testimonial-card {
+  background: #FFFFFF;
+  border-radius: 24px;
+  padding: 40px 20px;
+}
+
+/* Search input (Wise style) */
+.wise-input {
+  font-family: inter, Arial, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #121511;
+  background-color: #EDEFEB;
+  border-radius: 24px;
+  border: 1px solid #000000;
+  padding: 2px 0 2px 10px;
+  width: 100%;
+}
+
+/* Nav link */
+.nav-link {
+  font-family: inter, Arial, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #0E0F0C;
+  text-decoration: none;
+  transition: color 0.3s ease-in-out;
+}
+.nav-link:hover {
+  color: #163300;
 }
