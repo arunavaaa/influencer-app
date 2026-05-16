@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import {
   LayoutDashboard,
   Package,
@@ -42,6 +43,26 @@ const PLATFORM_COLORS: Record<string, string> = {
   youtube: 'bg-red-100 text-red-700',
   moj: 'bg-purple-100 text-purple-700',
   sharechat: 'bg-yellow-100 text-yellow-700',
+}
+
+function WelcomeBanner() {
+  const searchParams = useSearchParams()
+  const isWelcome = searchParams.get('welcome') === 'true'
+  const [visible, setVisible] = useState(isWelcome)
+
+  if (!visible) return null
+  return (
+    <div className="bg-[#163300] rounded-3xl p-6 mb-8 flex items-start justify-between gap-4">
+      <div className="flex items-start gap-4">
+        <span className="text-3xl">🎉</span>
+        <div>
+          <p className="text-[18px] font-black text-white mb-1">Welcome to Crayon! Your profile is live.</p>
+          <p className="text-[14px] text-white/60">Brands can now discover and hire you. Share your profile link to get your first enquiry.</p>
+        </div>
+      </div>
+      <button onClick={() => setVisible(false)} className="text-white/40 hover:text-white text-[20px] leading-none flex-shrink-0 mt-1">×</button>
+    </div>
+  )
 }
 
 export default function InfluencerHome() {
@@ -185,6 +206,11 @@ export default function InfluencerHome() {
       {/* ── MAIN CONTENT ── */}
       <main className="flex-1 ml-[240px] p-8">
         <div className="max-w-[1000px]">
+          {/* Welcome banner (first-time users) */}
+          <Suspense fallback={null}>
+            <WelcomeBanner />
+          </Suspense>
+
           {/* Greeting */}
           <div className="mb-8">
             <h1 className="text-[30px] font-black text-[#121511]">

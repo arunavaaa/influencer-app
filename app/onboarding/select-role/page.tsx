@@ -40,7 +40,7 @@ export default function SelectRolePage() {
         .from('influencer_profiles')
         .upsert({ user_id: user.id })
 
-      router.push('/onboarding/influencer')
+      router.push('/onboarding/creator')
     } else {
       await supabase
         .from('brand_profiles')

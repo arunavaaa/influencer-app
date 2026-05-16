@@ -17,9 +17,10 @@ export async function GET(request: Request) {
         .eq('id', data.user.id)
         .single()
 
-      // If no role yet, send to role selection
+      // If no role yet — check for a next param (set by onboarding Google OAuth)
+      const next = searchParams.get('next')
       if (!userData?.role) {
-        return NextResponse.redirect(`${origin}/onboarding/select-role`)
+        return NextResponse.redirect(`${origin}${next || '/onboarding/creator'}`)
       }
 
       // If influencer, go to influencer dashboard
