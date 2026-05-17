@@ -121,15 +121,21 @@ export function Navbar() {
             <>
               <Link
                 href="/login"
-                className="hidden sm:block text-[16px] font-semibold text-[#163300] hover:opacity-70 transition-opacity px-4 py-2"
+                className="hidden sm:block text-[15px] font-semibold text-[#163300] hover:opacity-70 transition-opacity px-4 py-2 focus-visible:underline"
               >
                 Login
               </Link>
               <Link
                 href="/login"
-                className="bg-[#9FE870] text-[#163300] font-bold text-[15px] px-6 py-2.5 rounded-full hover:bg-[#8fdc60] transition-colors"
+                className="hidden sm:block text-[14px] font-bold text-[#163300] border-2 border-[#163300]/25 px-4 py-2 rounded-full hover:border-[#163300] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#163300]"
               >
-                Join Free
+                Join as Brand
+              </Link>
+              <Link
+                href="/onboarding/creator"
+                className="bg-[#9FE870] text-[#163300] font-bold text-[14px] px-5 py-2.5 rounded-full hover:bg-[#8fdc60] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#163300]"
+              >
+                Join as Creator
               </Link>
             </>
           )}
