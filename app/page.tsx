@@ -60,7 +60,7 @@ export default async function Landing() {
 /* ─────────────────────── HERO ─────────────────────── */
 function Hero() {
   return (
-    <section className="bg-[#163300] overflow-hidden">
+    <section className="bg-[#163300]">
       {/* Radial glow */}
       <div
         className="pointer-events-none"
@@ -253,7 +253,7 @@ function HowItWorks() {
             },
           ].map((s) => (
             <div key={s.n} className="bg-white p-8 md:p-10">
-              <span className="text-[72px] font-black text-[#45A905] leading-none block">{s.n}</span>
+              <span className="text-[72px] font-black text-[#121511] leading-none block">{s.n}</span>
               <h3 className="text-[22px] font-black text-[#121511] mt-4 mb-3">{s.title}</h3>
               <p className="text-[15px] text-[#6A6C6A] leading-relaxed">{s.body}</p>
               <div className="mt-8 pt-6 border-t border-[#E8E8E8]">

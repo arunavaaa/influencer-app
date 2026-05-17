@@ -6,12 +6,9 @@ import { Search } from 'lucide-react'
 
 const PLATFORMS = ['Instagram', 'YouTube', 'Moj', 'ShareChat']
 
-const POPULAR_CATEGORIES = [
+const ALL_CATEGORIES = [
   'Lifestyle', 'Fashion', 'Beauty & Skincare', 'Food & Drink',
   'Health & Fitness', 'Comedy & Entertainment',
-]
-
-const MORE_CATEGORIES = [
   'Finance & Investing', 'Technology', 'Travel', 'Education',
   'Music & Dance', 'Parenting', 'Sports & Cricket', 'Gaming',
   'Entrepreneurship', 'Art & Photography', 'Home Decor', 'Automotive',
@@ -25,7 +22,7 @@ function PillBtn({
   return (
     <button
       onClick={onClick}
-      className={`px-4 py-2 rounded-full text-[14px] font-semibold border transition-colors whitespace-nowrap ${
+      className={`px-3 py-1 rounded-full text-[13px] font-semibold border transition-colors whitespace-nowrap ${
         active
           ? 'bg-[#163300] text-white border-[#163300]'
           : 'bg-white text-[#121511] border-[#E0E0E0] hover:border-[#163300]'
@@ -78,9 +75,10 @@ export function HeroSearch() {
   const catLabel = categoryLabel()
 
   return (
-    <div ref={containerRef} className="relative max-w-[640px] mx-auto">
+    /* overflow-visible so dropdowns can escape the hero section */
+    <div ref={containerRef} className="relative max-w-[640px] mx-auto" style={{ zIndex: 40 }}>
       {/* Bar */}
-      <div className="bg-white rounded-2xl flex items-stretch shadow-lg overflow-visible">
+      <div className="bg-white rounded-2xl flex items-stretch shadow-lg">
         {/* Platform panel */}
         <button
           onClick={() => { setPlatformOpen(v => !v); setCategoryOpen(false) }}
@@ -117,8 +115,7 @@ export function HeroSearch() {
 
       {/* Platform dropdown */}
       {platformOpen && (
-        <div className="absolute top-[calc(100%+8px)] left-0 w-72 bg-white rounded-2xl shadow-2xl border border-[#EBEBEB] p-5 z-50">
-          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#6A6C6A] mb-3">Select Platform</p>
+        <div className="absolute top-[calc(100%+8px)] left-0 w-64 bg-white rounded-2xl shadow-2xl border border-[#EBEBEB] p-4 z-[999]">
           <div className="flex flex-wrap gap-2">
             {PLATFORMS.map(p => (
               <PillBtn
@@ -134,21 +131,9 @@ export function HeroSearch() {
 
       {/* Category dropdown */}
       {categoryOpen && (
-        <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-white rounded-2xl shadow-2xl border border-[#EBEBEB] p-5 z-50 max-h-[420px] overflow-y-auto">
-          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#6A6C6A] mb-3">Popular</p>
-          <div className="flex flex-wrap gap-2 mb-5">
-            {POPULAR_CATEGORIES.map(cat => (
-              <PillBtn
-                key={cat}
-                label={cat}
-                active={categories.includes(cat)}
-                onClick={() => toggleCategory(cat)}
-              />
-            ))}
-          </div>
-          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#6A6C6A] mb-3">More Categories</p>
+        <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-white rounded-2xl shadow-2xl border border-[#EBEBEB] p-4 z-[999] max-h-[360px] overflow-y-auto">
           <div className="flex flex-wrap gap-2">
-            {MORE_CATEGORIES.map(cat => (
+            {ALL_CATEGORIES.map(cat => (
               <PillBtn
                 key={cat}
                 label={cat}
@@ -160,7 +145,7 @@ export function HeroSearch() {
           {categories.length > 0 && (
             <button
               onClick={() => setCategories([])}
-              className="mt-4 text-[13px] text-[#6A6C6A] hover:text-red-500 transition-colors"
+              className="mt-3 text-[12px] text-[#6A6C6A] hover:text-red-500 transition-colors"
             >
               Clear selection
             </button>

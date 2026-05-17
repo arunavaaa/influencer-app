@@ -72,7 +72,8 @@ export function Navbar() {
       className="fixed top-0 left-0 right-0 z-50 bg-[#EDEFEB] border-b border-[#E8E8E8]"
       style={{ height: '64px' }}
     >
-      <div className="max-w-[1360px] mx-auto px-5 md:px-[70px] h-full flex items-center justify-between">
+      <div className="px-5 md:px-[70px] h-full">
+      <div className="max-w-[1360px] mx-auto h-full flex items-center justify-between">
         {/* Logo */}
         <Link
           href="/"
@@ -177,6 +178,7 @@ export function Navbar() {
           )}
         </div>
       </div>
+      </div>
     </nav>
   )
 }
@@ -199,7 +201,7 @@ function NavLink({
       href={href}
       className={`text-[15px] font-semibold px-4 py-2 rounded-full transition-colors relative ${
         isActive
-          ? 'text-[#121511] font-black'
+          ? 'bg-[#121511] text-white font-bold'
           : 'text-[#4A4C4A] hover:text-[#121511] hover:bg-[#E8E8E8]'
       }`}
     >
