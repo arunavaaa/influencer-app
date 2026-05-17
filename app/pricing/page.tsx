@@ -19,19 +19,17 @@ const PLANS = [
       { label: 'Browse 10,000+ creators', included: true },
       { label: 'Direct hire from profiles', included: true },
       { label: 'Escrow-protected payments', included: true },
-      { label: '10% platform commission', included: true },
       { label: 'Post campaigns', included: false },
       { label: 'Advanced search filters', included: false },
       { label: 'Chat before hiring', included: false },
-      { label: 'Live post analytics', included: false },
       { label: 'Priority support', included: false },
     ],
   },
   {
     name: 'Pro',
     tagline: 'For growing brands',
-    monthlyPrice: 2999,
-    annualPrice: Math.round((2999 * 10) / 12),
+    monthlyPrice: 599,
+    annualPrice: 499,
     commission: '10%',
     color: 'bg-[#163300] border-[#163300]',
     popular: true,
@@ -40,19 +38,17 @@ const PLANS = [
       { label: 'Browse 10,000+ creators', included: true },
       { label: 'Direct hire from profiles', included: true },
       { label: 'Escrow-protected payments', included: true },
-      { label: '10% platform commission', included: true },
-      { label: '1 campaign/month', included: true },
+      { label: '3 campaigns/month', included: true },
       { label: 'Advanced search filters', included: true },
       { label: 'Chat before hiring', included: true },
-      { label: '5 tracked posts', included: true },
       { label: 'Priority support', included: false },
     ],
   },
   {
     name: 'Scale',
     tagline: 'For power users',
-    monthlyPrice: 7999,
-    annualPrice: Math.round((7999 * 10) / 12),
+    monthlyPrice: 1199,
+    annualPrice: 999,
     commission: '5%',
     color: 'bg-white border-[#9FE870]',
     buttonClass: 'bg-[#163300] text-[#9FE870] hover:bg-[#1f4a00]',
@@ -60,11 +56,9 @@ const PLANS = [
       { label: 'Browse 10,000+ creators', included: true },
       { label: 'Direct hire from profiles', included: true },
       { label: 'Escrow-protected payments', included: true },
-      { label: '5% platform commission', included: true },
       { label: 'Unlimited campaigns', included: true },
       { label: 'Advanced search filters', included: true },
       { label: 'Chat before hiring', included: true },
-      { label: '15 tracked posts', included: true },
       { label: 'Priority support', included: true },
     ],
   },
@@ -106,10 +100,14 @@ export default function PricingPage() {
               }`}
             >
               Annual
-              <span className="ml-2 text-[11px] bg-[#9FE870]/20 text-[#9FE870] px-2 py-0.5 rounded-full">
-                Save 2 months
-              </span>
             </button>
+            <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full transition-colors ${
+              billing === 'annual'
+                ? 'bg-[#9FE870]/25 text-[#9FE870]'
+                : 'bg-[#9FE870]/15 text-[#9FE870]/70'
+            }`}>
+              Save 2 months
+            </span>
           </div>
         </div>
       </section>
@@ -200,9 +198,11 @@ export default function PricingPage() {
         </div>
 
         {/* FAQ section */}
-        <div className="mt-10 bg-white rounded-[24px] p-8">
-          <h2 className="text-[25px] font-black text-[#121511] mb-8">Frequently Asked Questions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="mt-12 px-2">
+          <h2 className="text-[32px] font-black text-[#121511] mb-10">
+            Common <span className="text-[#45A905]">questions.</span>
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-8">
             {[
               { q: 'What is the platform fee?', a: 'Free and Pro plans charge 10% on top of the creator\'s price. Scale plan reduces this to 5%.' },
               { q: 'How does escrow work?', a: 'When you hire a creator, funds are held securely. They\'re released only when you approve the content, or automatically after 72 hours.' },
@@ -211,7 +211,7 @@ export default function PricingPage() {
               { q: 'What if a creator declines?', a: 'If a creator declines your order, the full amount is refunded to your balance within 2-3 business days.' },
               { q: 'Do you support Razorpay?', a: 'Yes, all payments are processed via Razorpay. We support UPI, credit cards, debit cards, and net banking.' },
             ].map((faq) => (
-              <div key={faq.q} className="border-b border-[#E8E8E8] pb-5">
+              <div key={faq.q}>
                 <h3 className="text-[16px] font-bold text-[#121511] mb-2">{faq.q}</h3>
                 <p className="text-[14px] text-[#6A6C6A] leading-relaxed">{faq.a}</p>
               </div>
