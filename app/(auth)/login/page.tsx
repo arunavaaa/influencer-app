@@ -42,7 +42,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex" style={{ fontFamily: 'Inter, Arial, sans-serif' }}>
+    <div className="h-screen overflow-hidden -mt-16 flex" style={{ fontFamily: 'Inter, Arial, sans-serif' }}>
 
       {/* ── Left panel: background image + tagline ── */}
       <div className="hidden lg:flex flex-1 relative overflow-hidden">
