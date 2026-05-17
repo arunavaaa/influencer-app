@@ -108,11 +108,14 @@ function Hero() {
 /* ─────────────────────── CREATOR SHOWCASE ─────────────────────── */
 async function CreatorShowcase() {
   const supabase = await createClient()
-  const { data: db } = await supabase
-    .from('influencer_profiles')
-    .select('id, display_name, city, niche, reputation_score, content_packages(price_inr)')
-    .eq('is_profile_live', true)
-    .limit(8)
+  const [{ data: db }, { data: { user } }] = await Promise.all([
+    supabase
+      .from('influencer_profiles')
+      .select('id, display_name, city, niche, reputation_score, content_packages(price_inr)')
+      .eq('is_profile_live', true)
+      .limit(8),
+    supabase.auth.getUser(),
+  ])
 
   type Card = {
     id: string
@@ -171,7 +174,7 @@ async function CreatorShowcase() {
           {creators.map((c) => (
             <Link
               key={c.id}
-              href={c.isReal ? `/influencer/${c.id}` : '/brand/discover'}
+              href={user ? (c.isReal ? `/influencer/${c.id}` : '/brand/discover') : '/login'}
               className="group focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#163300] rounded-[20px]"
             >
               <div className="bg-white rounded-[20px] overflow-hidden hover:-translate-y-1.5 hover:shadow-xl transition-all duration-200">
@@ -206,13 +209,18 @@ async function CreatorShowcase() {
 
                   <div className="flex flex-wrap gap-1 mb-3">
                     {c.niche.slice(0, 2).map((n: string) => (
-                      <span key={n} className="text-[11px] px-2 py-0.5 bg-[#EDEFEB] text-[#45A905] rounded-full font-medium">{n}</span>
+                      <span key={n} className="text-[11px] px-2 py-0.5 bg-[#EDEFEB] text-[#4A4C4A] rounded-full font-bold">{n}</span>
                     ))}
                   </div>
 
-                  <div className="pt-3 border-t border-[#F0F0F0]">
-                    <p className="text-[10px] text-[#6A6C6A] uppercase tracking-wide mb-0.5">Starting from</p>
-                    <p className="text-[15px] font-black text-[#45A905]">{c.price !== '—' ? c.price : '—'}</p>
+                  <div className="pt-3 border-t border-[#F0F0F0] flex items-center justify-between">
+                    <div>
+                      <p className="text-[10px] text-[#6A6C6A] uppercase tracking-wide mb-0.5">Starting from</p>
+                      <p className="text-[15px] font-black text-[#121511]">{c.price !== '—' ? c.price : '—'}</p>
+                    </div>
+                    <span className="text-[12px] font-bold text-[#121511] bg-[#EDEFEB] group-hover:bg-[#163300] group-hover:text-[#9FE870] px-3 py-1.5 rounded-full transition-colors flex-shrink-0">
+                      View →
+                    </span>
                   </div>
                 </div>
               </div>

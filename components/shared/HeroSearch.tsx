@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Search } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 
 const PLATFORMS = ['Instagram', 'YouTube', 'Moj', 'ShareChat']
 
@@ -65,7 +66,13 @@ export function HeroSearch() {
     return shown + extra
   }
 
-  function handleSearch() {
+  async function handleSearch() {
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      router.push('/login')
+      return
+    }
     const params = new URLSearchParams()
     if (platform) params.set('platform', platform.toLowerCase())
     if (categories.length > 0) params.set('category', categories[0])
