@@ -70,44 +70,44 @@ export default function PricingPage() {
   return (
     <div className="min-h-screen bg-[#EDEFEB]">
       {/* Header */}
-      <section className="bg-[#163300] px-5 md:px-[70px] py-[60px]">
+      <section className="bg-[#EDEFEB] px-5 md:px-[70px] py-[60px]">
         <div className="max-w-[800px] mx-auto text-center">
-          <h1 className="text-[48px] font-black text-[#9FE870] uppercase leading-tight mb-4">
+          <h1 className="text-[48px] font-black text-[#121511] uppercase leading-tight mb-4">
             Simple, Transparent Pricing
           </h1>
-          <p className="text-[18px] text-white/80 mb-8">
+          <p className="text-[18px] text-[#6A6C6A] mb-8">
             Start free. Upgrade when you need more power.
           </p>
 
           {/* Billing toggle */}
-          <div className="inline-flex items-center gap-0 bg-white/10 rounded-full p-1">
+          <div className="inline-flex items-center gap-0 bg-[#D8DAD6] rounded-full p-1">
             <button
               onClick={() => setBilling('monthly')}
               className={`px-6 py-2.5 rounded-full text-[15px] font-bold transition-colors ${
                 billing === 'monthly'
-                  ? 'bg-[#9FE870] text-[#163300]'
-                  : 'text-white/70 hover:text-white'
+                  ? 'bg-[#163300] text-white'
+                  : 'text-[#6A6C6A] hover:text-[#121511]'
               }`}
             >
               Monthly
             </button>
             <button
               onClick={() => setBilling('annual')}
-              className={`px-6 py-2.5 rounded-full text-[15px] font-bold transition-colors ${
+              className={`px-6 py-2.5 rounded-full text-[15px] font-bold transition-colors flex items-center gap-2 ${
                 billing === 'annual'
-                  ? 'bg-[#9FE870] text-[#163300]'
-                  : 'text-white/70 hover:text-white'
+                  ? 'bg-[#163300] text-white'
+                  : 'text-[#6A6C6A] hover:text-[#121511]'
               }`}
             >
               Annual
+              <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full transition-colors ${
+                billing === 'annual'
+                  ? 'bg-white/20 text-white'
+                  : 'bg-[#163300]/10 text-[#163300]/60'
+              }`}>
+                Save 2 months
+              </span>
             </button>
-            <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full transition-colors ${
-              billing === 'annual'
-                ? 'bg-[#9FE870]/25 text-[#9FE870]'
-                : 'bg-[#9FE870]/15 text-[#9FE870]/70'
-            }`}>
-              Save 2 months
-            </span>
           </div>
         </div>
       </section>
@@ -198,11 +198,9 @@ export default function PricingPage() {
         </div>
 
         {/* FAQ section */}
-        <div className="mt-12 px-2">
-          <h2 className="text-[32px] font-black text-[#121511] mb-10">
-            Common <span className="text-[#45A905]">questions.</span>
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-8">
+        <div className="mt-10 bg-white rounded-[24px] p-8">
+          <h2 className="text-[25px] font-black text-[#121511] mb-8">Frequently Asked Questions</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {[
               { q: 'What is the platform fee?', a: 'Free and Pro plans charge 10% on top of the creator\'s price. Scale plan reduces this to 5%.' },
               { q: 'How does escrow work?', a: 'When you hire a creator, funds are held securely. They\'re released only when you approve the content, or automatically after 72 hours.' },
@@ -211,7 +209,7 @@ export default function PricingPage() {
               { q: 'What if a creator declines?', a: 'If a creator declines your order, the full amount is refunded to your balance within 2-3 business days.' },
               { q: 'Do you support Razorpay?', a: 'Yes, all payments are processed via Razorpay. We support UPI, credit cards, debit cards, and net banking.' },
             ].map((faq) => (
-              <div key={faq.q}>
+              <div key={faq.q} className="border-b border-[#E8E8E8] pb-5">
                 <h3 className="text-[16px] font-bold text-[#121511] mb-2">{faq.q}</h3>
                 <p className="text-[14px] text-[#6A6C6A] leading-relaxed">{faq.a}</p>
               </div>
