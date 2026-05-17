@@ -190,15 +190,17 @@ function NavLink({
   current: string | null
   children: React.ReactNode
 }) {
-  const isActive = current === href
+  // Match exact path, ignoring hash for how-it-works
+  const hrefPath = href.split('#')[0] || '/'
+  const isActive = current === hrefPath && hrefPath !== '/'
 
   return (
     <Link
       href={href}
-      className={`text-[16px] font-semibold px-4 py-2 rounded-full transition-colors ${
+      className={`text-[15px] font-semibold px-4 py-2 rounded-full transition-colors relative ${
         isActive
-          ? 'bg-[#9FE870] text-[#163300]'
-          : 'text-[#0E0F0C] hover:bg-[#E8E8E8]'
+          ? 'text-[#163300] font-bold underline underline-offset-4 decoration-[#163300]/40 decoration-2'
+          : 'text-[#4A4C4A] hover:text-[#163300] hover:bg-[#E8E8E8]'
       }`}
     >
       {children}

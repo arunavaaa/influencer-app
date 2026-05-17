@@ -1,11 +1,11 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { Search } from 'lucide-react'
+import { HeroSearch } from '@/components/shared/HeroSearch'
 
 export const metadata = {
   title: "Crayon — India's Influencer Marketplace",
   description:
-    'Find and hire verified Indian creators on Instagram, YouTube, Moj & ShareChat. Pay securely via escrow. GST invoices included.',
+    'Find and work with verified Indian creators on Instagram, YouTube, Moj & ShareChat.',
 }
 
 const GRADIENTS = [
@@ -17,28 +17,25 @@ const GRADIENTS = [
   'from-pink-300 to-fuchsia-600',
   'from-teal-300 to-emerald-700',
   'from-indigo-300 to-violet-700',
+  'from-rose-400 to-pink-600',
+  'from-cyan-400 to-teal-700',
+  'from-lime-400 to-green-700',
+  'from-orange-400 to-yellow-500',
 ]
 
 const EXAMPLE_CREATORS = [
-  { id: 'ex1', display_name: 'Priya Sharma',    city: 'Mumbai',    niche: ['Fashion', 'Lifestyle'],       followers: '180K', platform: 'Instagram', price: '₹8,000',  gradient: GRADIENTS[0], top: true  },
-  { id: 'ex2', display_name: 'Rohan Verma',     city: 'Delhi',     niche: ['Tech', 'Gaming'],             followers: '520K', platform: 'YouTube',   price: '₹25,000', gradient: GRADIENTS[1], top: true  },
-  { id: 'ex3', display_name: 'Ananya Patel',    city: 'Bangalore', niche: ['Beauty', 'Skincare'],         followers: '95K',  platform: 'Instagram', price: '₹5,500',  gradient: GRADIENTS[2], top: false },
-  { id: 'ex4', display_name: 'Vikram Singh',    city: 'Chennai',   niche: ['Fitness', 'Wellness'],        followers: '240K', platform: 'Instagram', price: '₹12,000', gradient: GRADIENTS[3], top: false },
-  { id: 'ex5', display_name: 'Meera Nair',      city: 'Kochi',     niche: ['Food', 'Travel'],             followers: '67K',  platform: 'YouTube',   price: '₹7,000',  gradient: GRADIENTS[4], top: false },
-  { id: 'ex6', display_name: 'Arjun Mehta',     city: 'Hyderabad', niche: ['Finance', 'Business'],       followers: '310K', platform: 'YouTube',   price: '₹18,000', gradient: GRADIENTS[5], top: true  },
-  { id: 'ex7', display_name: 'Kavya Rao',       city: 'Pune',      niche: ['Comedy', 'Entertainment'],   followers: '1.2M', platform: 'Moj',       price: '₹35,000', gradient: GRADIENTS[6], top: false },
-  { id: 'ex8', display_name: 'Siddharth Kumar', city: 'Kolkata',   niche: ['Education', 'Career'],       followers: '88K',  platform: 'ShareChat', price: '₹4,500',  gradient: GRADIENTS[7], top: false },
-]
-
-const POPULAR_CATEGORIES = [
-  'Lifestyle', 'Fashion', 'Beauty & Skincare', 'Food & Drink', 'Health & Fitness', 'Comedy & Entertainment',
-]
-
-const MORE_CATEGORIES = [
-  'Finance & Investing', 'Technology', 'Travel', 'Education', 'Music & Dance', 'Parenting',
-  'Sports & Cricket', 'Gaming', 'Entrepreneurship', 'Art & Photography', 'Home Decor',
-  'Automotive', 'Wedding & Bridal', 'Animals & Pets', 'Sustainable Living',
-  'Astrology & Spirituality', 'Saree & Ethnic Wear', 'Regional Content',
+  { id: 'ex1', display_name: 'Priya Sharma',    city: 'Mumbai',    niche: ['Fashion', 'Lifestyle'],     followers: '180K', price: '₹8,000',  gradient: GRADIENTS[0],  top: true  },
+  { id: 'ex2', display_name: 'Rohan Verma',     city: 'Delhi',     niche: ['Tech', 'Gaming'],           followers: '520K', price: '₹25,000', gradient: GRADIENTS[1],  top: true  },
+  { id: 'ex3', display_name: 'Ananya Patel',    city: 'Bangalore', niche: ['Beauty', 'Skincare'],       followers: '95K',  price: '₹5,500',  gradient: GRADIENTS[2],  top: false },
+  { id: 'ex4', display_name: 'Vikram Singh',    city: 'Chennai',   niche: ['Fitness', 'Wellness'],      followers: '240K', price: '₹12,000', gradient: GRADIENTS[3],  top: false },
+  { id: 'ex5', display_name: 'Meera Nair',      city: 'Kochi',     niche: ['Food', 'Travel'],           followers: '67K',  price: '₹7,000',  gradient: GRADIENTS[4],  top: false },
+  { id: 'ex6', display_name: 'Arjun Mehta',     city: 'Hyderabad', niche: ['Finance', 'Business'],     followers: '310K', price: '₹18,000', gradient: GRADIENTS[5],  top: true  },
+  { id: 'ex7', display_name: 'Kavya Rao',       city: 'Pune',      niche: ['Comedy', 'Entertainment'], followers: '1.2M', price: '₹35,000', gradient: GRADIENTS[6],  top: false },
+  { id: 'ex8', display_name: 'Siddharth Kumar', city: 'Kolkata',   niche: ['Education', 'Career'],     followers: '88K',  price: '₹4,500',  gradient: GRADIENTS[7],  top: false },
+  { id: 'ex9', display_name: 'Riya Desai',      city: 'Ahmedabad', niche: ['Lifestyle', 'Home Decor'], followers: '43K',  price: '₹3,500',  gradient: GRADIENTS[8],  top: false },
+  { id: 'ex10', display_name: 'Neha Joshi',     city: 'Jaipur',    niche: ['Bridal', 'Fashion'],       followers: '120K', price: '₹9,000',  gradient: GRADIENTS[9],  top: false },
+  { id: 'ex11', display_name: 'Aditya Roy',     city: 'Mumbai',    niche: ['Music', 'Lifestyle'],      followers: '890K', price: '₹45,000', gradient: GRADIENTS[10], top: true  },
+  { id: 'ex12', display_name: 'Pooja Menon',    city: 'Kochi',     niche: ['Wellness', 'Yoga'],        followers: '55K',  price: '₹4,000',  gradient: GRADIENTS[11], top: false },
 ]
 
 export default async function Landing() {
@@ -46,9 +43,8 @@ export default async function Landing() {
     <div className="text-[#121511] overflow-x-hidden" style={{ fontFamily: 'Inter, Arial, sans-serif' }}>
       <style>{`
         @keyframes scroll-left { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-        .scroll-track { animation: scroll-left 32s linear infinite; }
+        .scroll-track { animation: scroll-left 40s linear infinite; }
         .scroll-track:hover { animation-play-state: paused; }
-        select { -webkit-appearance: none; appearance: none; }
       `}</style>
       <Hero />
       <CreatorShowcase />
@@ -64,95 +60,44 @@ export default async function Landing() {
 /* ─────────────────────── HERO ─────────────────────── */
 function Hero() {
   return (
-    <section className="bg-[#163300] pt-[100px] pb-0 px-5 md:px-[70px] relative overflow-hidden">
+    <section className="bg-[#163300] overflow-hidden">
+      {/* Radial glow */}
       <div
-        className="absolute inset-0 pointer-events-none"
-        style={{ background: 'radial-gradient(ellipse 70% 60% at 50% 40%, rgba(159,232,112,0.06) 0%, transparent 70%)' }}
+        className="pointer-events-none"
+        style={{ background: 'radial-gradient(ellipse 70% 60% at 50% 40%, rgba(159,232,112,0.06) 0%, transparent 70%)', height: 0 }}
       />
 
-      {/* Center-aligned content */}
-      <div className="max-w-[860px] mx-auto text-center relative z-10 pt-10 pb-14">
+      {/* Centered content */}
+      <div className="max-w-[860px] mx-auto text-center px-5 md:px-10 pt-[100px] pb-12">
         <h1 className="text-[64px] md:text-[96px] font-black leading-[0.88] uppercase tracking-tight text-white mb-6">
           Find India&rsquo;s<br />
           <span className="text-[#9FE870]">Top Creators.</span>
         </h1>
 
-        <p className="text-[17px] md:text-[19px] text-white/55 leading-relaxed max-w-[520px] mx-auto mb-10">
-          Search verified influencers across Instagram, YouTube, Moj and ShareChat. Pay safely. Get GST invoices automatically.
+        <p className="text-[17px] md:text-[19px] text-white/55 leading-relaxed max-w-[500px] mx-auto mb-10">
+          Find and work with verified Indian creators across Instagram, YouTube, Moj and ShareChat.
         </p>
 
-        {/* Search bar */}
-        <form action="/brand/discover" method="GET" className="bg-white rounded-2xl flex items-stretch max-w-[660px] mx-auto overflow-hidden shadow-lg">
-          {/* Platform */}
-          <div className="relative flex-1 border-r border-[#E8E8E8]">
-            <label className="block text-[11px] font-bold uppercase tracking-[0.14em] text-[#163300] pt-3.5 px-5 pb-0 text-left">Platform</label>
-            <select
-              name="platform"
-              className="w-full px-5 pb-3.5 pt-0.5 text-[15px] text-[#6A6C6A] bg-transparent focus:outline-none cursor-pointer text-left"
-              defaultValue=""
-            >
-              <option value="">Any platform</option>
-              <option value="instagram">Instagram</option>
-              <option value="youtube">YouTube</option>
-              <option value="moj">Moj</option>
-              <option value="sharechat">ShareChat</option>
-            </select>
-          </div>
-
-          {/* Category */}
-          <div className="relative flex-[1.4]">
-            <label className="block text-[11px] font-bold uppercase tracking-[0.14em] text-[#163300] pt-3.5 px-5 pb-0 text-left">Category</label>
-            <select
-              name="category"
-              className="w-full px-5 pb-3.5 pt-0.5 text-[15px] text-[#6A6C6A] bg-transparent focus:outline-none cursor-pointer text-left"
-              defaultValue=""
-            >
-              <option value="">All categories</option>
-              <optgroup label="Popular">
-                {POPULAR_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-              </optgroup>
-              <optgroup label="More Categories">
-                {MORE_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-              </optgroup>
-            </select>
-          </div>
-
-          {/* Search button */}
-          <button
-            type="submit"
-            className="flex-shrink-0 w-14 flex items-center justify-center bg-[#121511] hover:bg-[#163300] transition-colors m-2 rounded-xl"
-            aria-label="Search creators"
-          >
-            <Search className="w-5 h-5 text-white" />
-          </button>
-        </form>
+        {/* Interactive search — client component */}
+        <HeroSearch />
       </div>
 
-      {/* Auto-scrolling creator cards */}
-      <div className="relative overflow-hidden pb-0 -mb-0">
-        {/* Fade edges */}
-        <div className="absolute left-0 top-0 bottom-0 w-20 z-10 pointer-events-none" style={{ background: 'linear-gradient(to right, #163300, transparent)' }} />
-        <div className="absolute right-0 top-0 bottom-0 w-20 z-10 pointer-events-none" style={{ background: 'linear-gradient(to left, #163300, transparent)' }} />
+      {/* Edge-to-edge auto-scrolling video placeholder cards */}
+      <div className="relative" style={{ height: '220px', overflow: 'hidden' }}>
+        {/* Left + right fade */}
+        <div className="absolute left-0 top-0 bottom-0 w-24 z-10 pointer-events-none"
+          style={{ background: 'linear-gradient(to right, #163300 20%, transparent)' }} />
+        <div className="absolute right-0 top-0 bottom-0 w-24 z-10 pointer-events-none"
+          style={{ background: 'linear-gradient(to left, #163300 20%, transparent)' }} />
 
-        <div className="scroll-track flex gap-4 w-max pb-6 pt-2">
+        {/* Cards track — cards are 280px tall, container is 220px → bottom 21% cropped */}
+        <div className="scroll-track flex gap-3 w-max">
           {[...EXAMPLE_CREATORS, ...EXAMPLE_CREATORS].map((c, i) => (
-            <Link
+            <div
               key={i}
-              href="/brand/discover"
-              className="flex-shrink-0 w-[200px] bg-white/10 border border-white/10 rounded-[20px] overflow-hidden hover:bg-white/15 transition-colors group"
-            >
-              <div className={`h-[140px] bg-gradient-to-br ${c.gradient} relative flex items-center justify-center`}>
-                <span className="text-[60px] font-black text-white/10 select-none">{c.display_name[0]}</span>
-                <span className="absolute top-2 right-2 bg-black/30 text-white text-[11px] font-bold px-2 py-0.5 rounded-full">
-                  {c.followers}
-                </span>
-              </div>
-              <div className="p-3">
-                <p className="text-[13px] font-bold text-white truncate">{c.display_name}</p>
-                <p className="text-[11px] text-white/50 mt-0.5">{c.niche[0]}</p>
-                <p className="text-[12px] font-black text-[#9FE870] mt-1.5">From {c.price}</p>
-              </div>
-            </Link>
+              className={`flex-shrink-0 w-[160px] rounded-[20px] bg-gradient-to-br ${c.gradient}`}
+              style={{ height: '280px' }}
+            />
           ))}
         </div>
       </div>
@@ -193,7 +138,7 @@ async function CreatorShowcase() {
         isReal: true,
         top: i < 2,
       }))
-    : EXAMPLE_CREATORS.map(c => ({ ...c, isReal: false }))
+    : EXAMPLE_CREATORS.slice(0, 8).map(c => ({ ...c, isReal: false }))
 
   return (
     <section className="bg-[#EDEFEB] py-[80px] px-5 md:px-[70px]">
@@ -209,7 +154,7 @@ async function CreatorShowcase() {
           </div>
           <Link
             href="/brand/discover"
-            className="inline-flex items-center gap-2 bg-[#163300] text-[#9FE870] font-bold text-[15px] px-7 py-3.5 rounded-full hover:bg-[#1c4400] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#163300] flex-shrink-0"
+            className="inline-flex items-center gap-2 bg-[#163300] text-[#9FE870] font-bold text-[15px] px-7 py-3.5 rounded-full hover:bg-[#1c4400] transition-colors flex-shrink-0"
           >
             See All Creators →
           </Link>
@@ -217,7 +162,7 @@ async function CreatorShowcase() {
 
         {/* Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {creators.map((c, i) => (
+          {creators.map((c) => (
             <Link
               key={c.id}
               href={c.isReal ? `/influencer/${c.id}` : '/brand/discover'}
@@ -228,30 +173,30 @@ async function CreatorShowcase() {
                 <div className={`h-[150px] bg-gradient-to-br ${c.gradient} relative flex items-center justify-center`}>
                   <span className="text-[52px] font-black text-white/10 select-none">{c.display_name[0]}</span>
 
-                  {/* Top Creator badge */}
                   {c.top && (
-                    <span className="absolute top-3 left-3 bg-[#9FE870] text-[#163300] text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wide">
+                    <span className="absolute top-3 left-3 bg-[#163300] text-[#9FE870] text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wide">
                       Top Creator
                     </span>
                   )}
 
-                  {/* Followers */}
                   {c.followers !== '—' && (
                     <span className="absolute top-3 right-3 bg-black/35 text-white text-[11px] font-bold px-2.5 py-1 rounded-full">
                       {c.followers}
                     </span>
                   )}
 
-                  {/* Avatar */}
-                  <div className="absolute -bottom-4 left-4 w-9 h-9 rounded-full bg-[#163300] border-[3px] border-white flex items-center justify-center text-[#9FE870] font-black text-[13px] z-10">
+                  {/* Avatar — larger, more overlap */}
+                  <div className="absolute -bottom-6 left-4 w-12 h-12 rounded-full bg-[#163300] border-4 border-white flex items-center justify-center text-[#9FE870] font-black text-[16px] z-10">
                     {c.display_name[0]}
                   </div>
                 </div>
 
                 {/* Info */}
-                <div className="pt-6 px-4 pb-4">
+                <div className="pt-8 px-4 pb-4">
                   <p className="text-[14px] font-bold text-[#121511] leading-tight mb-0.5">{c.display_name}</p>
-                  <p className="text-[12px] text-[#6A6C6A] mb-3">{c.city} · {c.niche[0] || 'Creator'}</p>
+                  <p className="text-[12px] text-[#6A6C6A] mb-3">
+                    {c.city}{c.niche[0] ? ` · ${c.niche[0]}` : ''}
+                  </p>
 
                   <div className="flex flex-wrap gap-1 mb-3">
                     {c.niche.slice(0, 2).map((n: string) => (
@@ -261,10 +206,10 @@ async function CreatorShowcase() {
 
                   <div className="pt-3 border-t border-[#F0F0F0] flex items-center justify-between">
                     <div>
-                      <p className="text-[10px] text-[#6A6C6A] uppercase tracking-wide">Starting from</p>
-                      <p className="text-[13px] font-black text-[#163300]">{c.price !== '—' ? c.price : 'View profile'}</p>
+                      <p className="text-[10px] text-[#6A6C6A] uppercase tracking-wide mb-0.5">Starting from</p>
+                      <p className="text-[14px] font-black text-[#163300]">{c.price !== '—' ? c.price : 'View profile'}</p>
                     </div>
-                    <span className="text-[12px] font-bold text-[#163300] bg-[#EDEFEB] group-hover:bg-[#163300] group-hover:text-[#9FE870] px-3 py-1.5 rounded-full transition-colors">
+                    <span className="text-[12px] font-bold text-[#121511] bg-[#EDEFEB] group-hover:bg-[#163300] group-hover:text-[#9FE870] px-3 py-1.5 rounded-full transition-colors">
                       View →
                     </span>
                   </div>
@@ -281,13 +226,13 @@ async function CreatorShowcase() {
 /* ─────────────────────── HOW IT WORKS ─────────────────────── */
 function HowItWorks() {
   return (
-    <section className="bg-white py-[80px] px-5 md:px-[70px]">
+    <section id="how-it-works" className="bg-white py-[80px] px-5 md:px-[70px]">
       <div className="max-w-[1360px] mx-auto">
         <div className="mb-14">
           <p className="text-[12px] font-bold uppercase tracking-[0.18em] text-[#163300] mb-3">How It Works</p>
           <h2 className="text-[48px] md:text-[72px] font-black text-[#121511] uppercase leading-[0.88] max-w-[700px]">
             From brief to<br />
-            <span className="text-[#9FE870]">content in days.</span>
+            <span className="text-[#163300]">content in days.</span>
           </h2>
         </div>
 
@@ -296,7 +241,7 @@ function HowItWorks() {
             {
               n: '01',
               title: 'Post a Campaign',
-              body: 'Write your brief, set your budget, pick your platform and niche. Ready in under 5 minutes.',
+              body: 'Write your brief, set your budget, choose your platform and niche. Ready in under 5 minutes.',
               metric: '5 min setup',
             },
             {
@@ -313,7 +258,7 @@ function HowItWorks() {
             },
           ].map((s) => (
             <div key={s.n} className="bg-white p-8 md:p-10">
-              <span className="text-[72px] font-black text-[#9FE870] leading-none block">{s.n}</span>
+              <span className="text-[72px] font-black text-[#163300] leading-none block">{s.n}</span>
               <h3 className="text-[22px] font-black text-[#121511] mt-4 mb-3">{s.title}</h3>
               <p className="text-[15px] text-[#6A6C6A] leading-relaxed">{s.body}</p>
               <div className="mt-8 pt-6 border-t border-[#E8E8E8]">
@@ -326,13 +271,13 @@ function HowItWorks() {
         <div className="mt-8 flex flex-wrap gap-3">
           <Link
             href="/login"
-            className="bg-[#163300] text-[#9FE870] font-bold text-[16px] px-8 py-4 rounded-full hover:bg-[#1c4400] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#163300]"
+            className="bg-[#163300] text-[#9FE870] font-bold text-[16px] px-8 py-4 rounded-full hover:bg-[#1c4400] transition-colors"
           >
             Post a Campaign →
           </Link>
           <Link
             href="/creator"
-            className="bg-[#EDEFEB] text-[#163300] font-bold text-[16px] px-8 py-4 rounded-full hover:bg-[#e0e2de] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#163300]"
+            className="bg-[#EDEFEB] text-[#163300] font-bold text-[16px] px-8 py-4 rounded-full hover:bg-[#e0e2de] transition-colors"
           >
             Join as Creator →
           </Link>
@@ -405,12 +350,12 @@ function Testimonials() {
       role: 'Marketing Head, D2C Brand',
     },
     {
-      quote: 'Finally a platform built for India. Got paid within 72 hours — no chasing, no WhatsApp back-and-forth.',
+      quote: 'Finally a platform built for India. Got paid within 72 hours — no chasing, no back-and-forth over WhatsApp.',
       name: 'Rahul Sharma',
       role: 'Instagram Creator, 180K followers',
     },
     {
-      quote: 'GST invoices are generated automatically for every order. Our finance team loves it. Campaign management is so much faster now.',
+      quote: 'GST invoices are generated automatically for every order. Our finance team is happy and our campaign time is down by half.',
       name: 'Ankit Jain',
       role: 'Founder, Bangalore D2C Brand',
     },
@@ -464,13 +409,13 @@ function FooterCta() {
         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-20">
           <Link
             href="/login"
-            className="bg-[#9FE870] text-[#163300] font-bold text-[18px] px-12 py-5 rounded-full hover:bg-[#8fdc60] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            className="bg-[#9FE870] text-[#163300] font-bold text-[18px] px-12 py-5 rounded-full hover:bg-[#8fdc60] transition-colors"
           >
             Find Creators →
           </Link>
           <Link
             href="/creator"
-            className="bg-white/10 text-white border border-white/20 font-bold text-[18px] px-12 py-5 rounded-full hover:bg-white/20 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            className="bg-white/10 text-white border border-white/20 font-bold text-[18px] px-12 py-5 rounded-full hover:bg-white/20 transition-colors"
           >
             Join as Creator
           </Link>
@@ -497,60 +442,70 @@ function FooterCta() {
 /* ─────────────────────── FOOTER ─────────────────────── */
 function Footer() {
   return (
-    <footer className="bg-white border-t border-[#E8E8E8] px-5 md:px-[70px]">
-      <div className="max-w-[1360px] mx-auto py-[80px]">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-12">
+    <footer className="bg-white border-t border-[#E8E8E8] px-5 md:px-[70px] py-[60px]">
+      <div className="max-w-[1360px] mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr] gap-12 mb-14">
+          {/* Brand */}
           <div>
-            <p className="text-[16px] font-bold text-[#0E0F0C] mb-4">Resources</p>
+            <p className="text-[22px] font-black text-[#163300] mb-2">Crayon</p>
+            <p className="text-[14px] text-[#6A6C6A] leading-relaxed max-w-[280px]">
+              India&rsquo;s influencer marketplace connecting brands with verified creators across all major platforms.
+            </p>
+          </div>
+
+          {/* Platform */}
+          <div>
+            <p className="text-[13px] font-bold uppercase tracking-[0.14em] text-[#163300] mb-5">Platform</p>
             <ul className="flex flex-col gap-3">
-              {['Pricing', 'Blog', 'Resource Hub', '2026 Influencer Report', 'Brand Stories'].map((l) => (
-                <li key={l}>
-                  <Link href="/pricing" className="text-[15px] text-[#6A6C6A] hover:text-[#163300] transition-colors focus-visible:underline">{l}</Link>
-                </li>
-              ))}
+              <li>
+                <Link href="/brand/discover" className="text-[15px] text-[#6A6C6A] hover:text-[#163300] transition-colors font-medium">
+                  Find Creators
+                </Link>
+              </li>
+              <li>
+                <Link href="/#how-it-works" className="text-[15px] text-[#6A6C6A] hover:text-[#163300] transition-colors font-medium">
+                  How It Works
+                </Link>
+              </li>
+              <li>
+                <Link href="/pricing" className="text-[15px] text-[#6A6C6A] hover:text-[#163300] transition-colors font-medium">
+                  Pricing
+                </Link>
+              </li>
+              <li>
+                <span className="text-[15px] text-[#B0B2AF] font-medium cursor-default">Blog</span>
+              </li>
             </ul>
           </div>
+
+          {/* Join */}
           <div>
-            <p className="text-[16px] font-bold text-[#0E0F0C] mb-4">Tools</p>
+            <p className="text-[13px] font-bold uppercase tracking-[0.14em] text-[#163300] mb-5">Join</p>
             <ul className="flex flex-col gap-3">
-              {['Price Calculator', 'Engagement Rate Calculator', 'Campaign Brief Template', 'Influencer Contract Template'].map((l) => (
-                <li key={l}>
-                  <Link href="/tools/price-calculator" className="text-[15px] text-[#6A6C6A] hover:text-[#163300] transition-colors focus-visible:underline">{l}</Link>
-                </li>
-              ))}
+              <li>
+                <Link href="/login" className="text-[15px] text-[#6A6C6A] hover:text-[#163300] transition-colors font-medium">
+                  Join as Brand
+                </Link>
+              </li>
+              <li>
+                <Link href="/onboarding/creator" className="text-[15px] text-[#6A6C6A] hover:text-[#163300] transition-colors font-medium">
+                  Join as Creator
+                </Link>
+              </li>
+              <li>
+                <Link href="/login" className="text-[15px] text-[#6A6C6A] hover:text-[#163300] transition-colors font-medium">
+                  Sign In
+                </Link>
+              </li>
             </ul>
-          </div>
-          <div>
-            <p className="text-[16px] font-bold text-[#0E0F0C] mb-4">Discover</p>
-            <ul className="flex flex-col gap-3">
-              {['Find Influencers', 'Top Creators', 'Search by Platform', 'Search by Niche'].map((l) => (
-                <li key={l}>
-                  <Link href="/brand/discover" className="text-[15px] text-[#6A6C6A] hover:text-[#163300] transition-colors focus-visible:underline">{l}</Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <p className="text-[16px] font-bold text-[#0E0F0C] mb-4">Support</p>
-            <ul className="flex flex-col gap-3">
-              {['Contact Us', 'How It Works', 'FAQ'].map((l) => (
-                <li key={l}>
-                  <Link href="/login" className="text-[15px] text-[#6A6C6A] hover:text-[#163300] transition-colors focus-visible:underline">{l}</Link>
-                </li>
-              ))}
-            </ul>
-            <div className="mt-8">
-              <p className="text-[22px] font-black text-[#163300]">Crayon</p>
-              <p className="text-[13px] text-[#6A6C6A] mt-1">India&rsquo;s Influencer Marketplace</p>
-            </div>
           </div>
         </div>
+
         <div className="border-t border-[#E8E8E8] pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-[14px] text-[#6A6C6A]">
           <span>© {new Date().getFullYear()} Crayon. All rights reserved.</span>
           <div className="flex gap-6">
-            <Link href="/login" className="hover:text-[#163300] transition-colors focus-visible:underline">Privacy</Link>
-            <Link href="/login" className="hover:text-[#163300] transition-colors focus-visible:underline">Terms</Link>
-            <Link href="/login" className="hover:text-[#163300] transition-colors focus-visible:underline">Sitemap</Link>
+            <span className="text-[#B0B2AF] cursor-default">Privacy</span>
+            <span className="text-[#B0B2AF] cursor-default">Terms</span>
           </div>
         </div>
       </div>
