@@ -110,7 +110,7 @@ async function CreatorShowcase() {
   const supabase = await createClient()
   const { data: db } = await supabase
     .from('influencer_profiles')
-    .select('id, display_name, city, niche, reputation_score')
+    .select('id, display_name, city, niche, reputation_score, content_packages(price_inr)')
     .eq('is_profile_live', true)
     .limit(8)
 
@@ -126,6 +126,12 @@ async function CreatorShowcase() {
     top: boolean
   }
 
+  function formatMinPrice(pkgs: { price_inr: number }[] | null): string {
+    if (!pkgs || pkgs.length === 0) return '—'
+    const min = Math.min(...pkgs.map(p => p.price_inr))
+    return `₹${min.toLocaleString('en-IN')}`
+  }
+
   const creators: Card[] = (db && db.length > 0)
     ? db.map((c, i) => ({
         id: c.id,
@@ -133,7 +139,7 @@ async function CreatorShowcase() {
         city: c.city || 'India',
         niche: (c.niche as string[]) || [],
         followers: '—',
-        price: '—',
+        price: formatMinPrice((c as { content_packages: { price_inr: number }[] | null }).content_packages),
         gradient: GRADIENTS[i % GRADIENTS.length],
         isReal: true,
         top: i < 2,
