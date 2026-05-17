@@ -121,7 +121,7 @@ export function Navbar() {
             <>
               <Link
                 href="/login"
-                className="hidden sm:block text-[15px] font-semibold text-[#163300] hover:opacity-70 transition-opacity px-4 py-2 focus-visible:underline"
+                className="hidden sm:block text-[15px] font-semibold text-[#121511] hover:opacity-70 transition-opacity px-4 py-2 focus-visible:underline"
               >
                 Login
               </Link>
@@ -199,8 +199,8 @@ function NavLink({
       href={href}
       className={`text-[15px] font-semibold px-4 py-2 rounded-full transition-colors relative ${
         isActive
-          ? 'text-[#163300] font-bold underline underline-offset-4 decoration-[#163300]/40 decoration-2'
-          : 'text-[#4A4C4A] hover:text-[#163300] hover:bg-[#E8E8E8]'
+          ? 'text-[#121511] font-black'
+          : 'text-[#4A4C4A] hover:text-[#121511] hover:bg-[#E8E8E8]'
       }`}
     >
       {children}

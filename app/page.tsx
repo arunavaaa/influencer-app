@@ -91,11 +91,11 @@ function Hero() {
           style={{ background: 'linear-gradient(to left, #163300 20%, transparent)' }} />
 
         {/* Cards track — cards are 280px tall, container is 220px → bottom 21% cropped */}
-        <div className="scroll-track flex gap-3 w-max">
+        <div className="scroll-track flex gap-5 w-max">
           {[...EXAMPLE_CREATORS, ...EXAMPLE_CREATORS].map((c, i) => (
             <div
               key={i}
-              className={`flex-shrink-0 w-[160px] rounded-[20px] bg-gradient-to-br ${c.gradient}`}
+              className={`flex-shrink-0 w-[192px] rounded-[20px] bg-gradient-to-br ${c.gradient}`}
               style={{ height: '280px' }}
             />
           ))}
@@ -146,10 +146,10 @@ async function CreatorShowcase() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
           <div>
-            <p className="text-[12px] font-bold uppercase tracking-[0.18em] text-[#163300] mb-2">Browse Creators</p>
+            <p className="text-[12px] font-bold uppercase tracking-[0.18em] text-[#45A905] mb-2">Browse Creators</p>
             <h2 className="text-[48px] md:text-[60px] font-black text-[#121511] leading-[0.9] uppercase">
               10,000+<br />
-              <span className="text-[#163300]">Verified Creators</span>
+              <span className="text-[#45A905]">Verified Creators</span>
             </h2>
           </div>
           <Link
@@ -185,14 +185,14 @@ async function CreatorShowcase() {
                     </span>
                   )}
 
-                  {/* Avatar — larger, more overlap */}
-                  <div className="absolute -bottom-6 left-4 w-12 h-12 rounded-full bg-[#163300] border-4 border-white flex items-center justify-center text-[#9FE870] font-black text-[16px] z-10">
+                  {/* Avatar */}
+                  <div className="absolute -bottom-8 left-4 w-16 h-16 rounded-full bg-[#163300] border-4 border-white flex items-center justify-center text-[#9FE870] font-black text-[20px] z-10">
                     {c.display_name[0]}
                   </div>
                 </div>
 
                 {/* Info */}
-                <div className="pt-8 px-4 pb-4">
+                <div className="pt-11 px-4 pb-4">
                   <p className="text-[14px] font-bold text-[#121511] leading-tight mb-0.5">{c.display_name}</p>
                   <p className="text-[12px] text-[#6A6C6A] mb-3">
                     {c.city}{c.niche[0] ? ` · ${c.niche[0]}` : ''}
@@ -200,18 +200,13 @@ async function CreatorShowcase() {
 
                   <div className="flex flex-wrap gap-1 mb-3">
                     {c.niche.slice(0, 2).map((n: string) => (
-                      <span key={n} className="text-[11px] px-2 py-0.5 bg-[#EDEFEB] text-[#163300] rounded-full font-medium">{n}</span>
+                      <span key={n} className="text-[11px] px-2 py-0.5 bg-[#EDEFEB] text-[#45A905] rounded-full font-medium">{n}</span>
                     ))}
                   </div>
 
-                  <div className="pt-3 border-t border-[#F0F0F0] flex items-center justify-between">
-                    <div>
-                      <p className="text-[10px] text-[#6A6C6A] uppercase tracking-wide mb-0.5">Starting from</p>
-                      <p className="text-[14px] font-black text-[#163300]">{c.price !== '—' ? c.price : 'View profile'}</p>
-                    </div>
-                    <span className="text-[12px] font-bold text-[#121511] bg-[#EDEFEB] group-hover:bg-[#163300] group-hover:text-[#9FE870] px-3 py-1.5 rounded-full transition-colors">
-                      View →
-                    </span>
+                  <div className="pt-3 border-t border-[#F0F0F0]">
+                    <p className="text-[10px] text-[#6A6C6A] uppercase tracking-wide mb-0.5">Starting from</p>
+                    <p className="text-[15px] font-black text-[#45A905]">{c.price !== '—' ? c.price : '—'}</p>
                   </div>
                 </div>
               </div>
@@ -229,10 +224,10 @@ function HowItWorks() {
     <section id="how-it-works" className="bg-white py-[80px] px-5 md:px-[70px]">
       <div className="max-w-[1360px] mx-auto">
         <div className="mb-14">
-          <p className="text-[12px] font-bold uppercase tracking-[0.18em] text-[#163300] mb-3">How It Works</p>
+          <p className="text-[12px] font-bold uppercase tracking-[0.18em] text-[#45A905] mb-3">How It Works</p>
           <h2 className="text-[48px] md:text-[72px] font-black text-[#121511] uppercase leading-[0.88] max-w-[700px]">
             From brief to<br />
-            <span className="text-[#163300]">content in days.</span>
+            <span className="text-[#45A905]">content in days.</span>
           </h2>
         </div>
 
@@ -253,16 +248,16 @@ function HowItWorks() {
             {
               n: '03',
               title: 'Pay & Receive',
-              body: 'Funds held in escrow. Creator delivers content. You approve — or it auto-releases after 72 hours. GST invoice included.',
+              body: 'Funds held in escrow. Creator delivers content. You approve — or it auto-releases after 72 hours.',
               metric: '100% Secure',
             },
           ].map((s) => (
             <div key={s.n} className="bg-white p-8 md:p-10">
-              <span className="text-[72px] font-black text-[#163300] leading-none block">{s.n}</span>
+              <span className="text-[72px] font-black text-[#45A905] leading-none block">{s.n}</span>
               <h3 className="text-[22px] font-black text-[#121511] mt-4 mb-3">{s.title}</h3>
               <p className="text-[15px] text-[#6A6C6A] leading-relaxed">{s.body}</p>
               <div className="mt-8 pt-6 border-t border-[#E8E8E8]">
-                <p className="text-[24px] font-black text-[#163300]">{s.metric}</p>
+                <p className="text-[24px] font-black text-[#45A905]">{s.metric}</p>
               </div>
             </div>
           ))}
@@ -277,7 +272,7 @@ function HowItWorks() {
           </Link>
           <Link
             href="/creator"
-            className="bg-[#EDEFEB] text-[#163300] font-bold text-[16px] px-8 py-4 rounded-full hover:bg-[#e0e2de] transition-colors"
+            className="bg-[#EDEFEB] text-[#45A905] font-bold text-[16px] px-8 py-4 rounded-full hover:bg-[#e0e2de] transition-colors"
           >
             Join as Creator →
           </Link>
@@ -365,10 +360,10 @@ function Testimonials() {
     <section className="bg-[#EDEFEB] py-[80px] px-5 md:px-[70px]">
       <div className="max-w-[1360px] mx-auto">
         <div className="mb-12">
-          <p className="text-[12px] font-bold uppercase tracking-[0.18em] text-[#163300] mb-3">What People Say</p>
+          <p className="text-[12px] font-bold uppercase tracking-[0.18em] text-[#45A905] mb-3">What People Say</p>
           <h2 className="text-[48px] md:text-[60px] font-black text-[#121511] uppercase leading-[0.88]">
             Real results,<br />
-            <span className="text-[#163300]">real growth.</span>
+            <span className="text-[#45A905]">real growth.</span>
           </h2>
         </div>
 
@@ -455,20 +450,20 @@ function Footer() {
 
           {/* Platform */}
           <div>
-            <p className="text-[13px] font-bold uppercase tracking-[0.14em] text-[#163300] mb-5">Platform</p>
+            <p className="text-[13px] font-bold uppercase tracking-[0.14em] text-[#45A905] mb-5">Platform</p>
             <ul className="flex flex-col gap-3">
               <li>
-                <Link href="/brand/discover" className="text-[15px] text-[#6A6C6A] hover:text-[#163300] transition-colors font-medium">
+                <Link href="/brand/discover" className="text-[15px] text-[#6A6C6A] hover:text-[#45A905] transition-colors font-medium">
                   Find Creators
                 </Link>
               </li>
               <li>
-                <Link href="/#how-it-works" className="text-[15px] text-[#6A6C6A] hover:text-[#163300] transition-colors font-medium">
+                <Link href="/#how-it-works" className="text-[15px] text-[#6A6C6A] hover:text-[#45A905] transition-colors font-medium">
                   How It Works
                 </Link>
               </li>
               <li>
-                <Link href="/pricing" className="text-[15px] text-[#6A6C6A] hover:text-[#163300] transition-colors font-medium">
+                <Link href="/pricing" className="text-[15px] text-[#6A6C6A] hover:text-[#45A905] transition-colors font-medium">
                   Pricing
                 </Link>
               </li>
@@ -480,20 +475,20 @@ function Footer() {
 
           {/* Join */}
           <div>
-            <p className="text-[13px] font-bold uppercase tracking-[0.14em] text-[#163300] mb-5">Join</p>
+            <p className="text-[13px] font-bold uppercase tracking-[0.14em] text-[#45A905] mb-5">Join</p>
             <ul className="flex flex-col gap-3">
               <li>
-                <Link href="/login" className="text-[15px] text-[#6A6C6A] hover:text-[#163300] transition-colors font-medium">
+                <Link href="/login" className="text-[15px] text-[#6A6C6A] hover:text-[#45A905] transition-colors font-medium">
                   Join as Brand
                 </Link>
               </li>
               <li>
-                <Link href="/onboarding/creator" className="text-[15px] text-[#6A6C6A] hover:text-[#163300] transition-colors font-medium">
+                <Link href="/onboarding/creator" className="text-[15px] text-[#6A6C6A] hover:text-[#45A905] transition-colors font-medium">
                   Join as Creator
                 </Link>
               </li>
               <li>
-                <Link href="/login" className="text-[15px] text-[#6A6C6A] hover:text-[#163300] transition-colors font-medium">
+                <Link href="/login" className="text-[15px] text-[#6A6C6A] hover:text-[#45A905] transition-colors font-medium">
                   Sign In
                 </Link>
               </li>
