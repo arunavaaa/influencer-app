@@ -138,7 +138,7 @@ export default function DiscoverPage() {
             <select
               value={selectedNiche}
               onChange={(e) => setSelectedNiche(e.target.value)}
-              className="text-[14px] font-medium px-4 py-2 rounded-full border border-[#E8E8E8] bg-white text-[#121511] focus:outline-none focus:border-[#163300] cursor-pointer"
+              className="text-[14px] font-medium pl-4 pr-10 py-2 rounded-full border border-[#E8E8E8] bg-white text-[#121511] focus:outline-none focus:border-[#163300] cursor-pointer appearance-none"
             >
               <option value="">Any Category</option>
               {NICHES.map((n) => (
@@ -150,7 +150,7 @@ export default function DiscoverPage() {
             <select
               value={selectedFollowers}
               onChange={(e) => setSelectedFollowers(e.target.value)}
-              className="text-[14px] font-medium px-4 py-2 rounded-full border border-[#E8E8E8] bg-white text-[#121511] focus:outline-none focus:border-[#163300] cursor-pointer"
+              className="text-[14px] font-medium pl-4 pr-10 py-2 rounded-full border border-[#E8E8E8] bg-white text-[#121511] focus:outline-none focus:border-[#163300] cursor-pointer appearance-none"
             >
               {FOLLOWER_RANGES.map((f) => (
                 <option key={f} value={f}>{f} followers</option>
@@ -188,7 +188,7 @@ export default function DiscoverPage() {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="text-[14px] font-medium px-4 py-2 rounded-full border border-[#E8E8E8] bg-white focus:outline-none focus:border-[#163300] cursor-pointer"
+                className="text-[14px] font-medium pl-4 pr-10 py-2 rounded-full border border-[#E8E8E8] bg-white focus:outline-none focus:border-[#163300] cursor-pointer appearance-none"
               >
                 {SORT_OPTIONS.map((s) => (
                   <option key={s} value={s}>{s}</option>

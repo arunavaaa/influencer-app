@@ -106,7 +106,7 @@ export default function LibraryPage() {
           <select
             value={platformFilter}
             onChange={(e) => setPlatformFilter(e.target.value)}
-            className="text-[14px] px-4 py-2 rounded-full border border-[#E8E8E8] bg-white focus:outline-none focus:border-[#163300] cursor-pointer"
+            className="text-[14px] pl-4 pr-10 py-2 rounded-full border border-[#E8E8E8] bg-white focus:outline-none focus:border-[#163300] cursor-pointer appearance-none"
           >
             <option value="">All Platforms</option>
             <option value="instagram">Instagram</option>
@@ -117,7 +117,7 @@ export default function LibraryPage() {
           <select
             value={campaignFilter}
             onChange={(e) => setCampaignFilter(e.target.value)}
-            className="text-[14px] px-4 py-2 rounded-full border border-[#E8E8E8] bg-white focus:outline-none focus:border-[#163300] cursor-pointer"
+            className="text-[14px] pl-4 pr-10 py-2 rounded-full border border-[#E8E8E8] bg-white focus:outline-none focus:border-[#163300] cursor-pointer appearance-none"
           >
             <option value="">All Campaigns</option>
           </select>
