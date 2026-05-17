@@ -69,7 +69,7 @@ export default function LoginPage() {
           Crayon
         </Link>
 
-        {/* Tagline — bottom left, like Envato */}
+        {/* Tagline — bottom left */}
         <div className="absolute bottom-12 left-10 z-10 max-w-[420px]">
           <p className="text-[#9FE870] text-[13px] font-black uppercase tracking-[0.2em] mb-4">
             India&rsquo;s Creator Marketplace
@@ -79,20 +79,6 @@ export default function LoginPage() {
             is your<br />
             <span className="text-[#9FE870]">superpower.</span>
           </h2>
-          <p className="mt-5 text-white/60 text-[15px] leading-relaxed">
-            10,000+ Indian creators are already earning on Crayon.
-          </p>
-        </div>
-
-        {/* Bottom stat strip */}
-        <div className="absolute bottom-0 left-0 right-0 z-10 flex gap-8 px-10 py-5"
-          style={{ background: 'linear-gradient(to top, rgba(22,51,0,0.6), transparent)' }}>
-          {[['₹2Cr+', 'Paid to Creators'], ['72h', 'Avg Payout'], ['10K+', 'Active Creators']].map(([v, l]) => (
-            <div key={l}>
-              <p className="text-[#9FE870] text-[18px] font-black leading-tight">{v}</p>
-              <p className="text-white/50 text-[12px]">{l}</p>
-            </div>
-          ))}
         </div>
       </div>
 
