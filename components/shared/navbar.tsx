@@ -87,7 +87,7 @@ export function Navbar() {
           <div className="hidden md:flex items-center gap-1">
             {!user && (
               <>
-                <NavLink href="/brand/discover" current={pathname}>Find Creators</NavLink>
+                <NavLink href="/login" current={pathname}>Find Creators</NavLink>
                 <NavLink href="/#how-it-works" current={pathname}>How It Works</NavLink>
                 <NavLink href="/pricing" current={pathname}>Pricing</NavLink>
               </>

@@ -199,31 +199,6 @@ export default function PricingPage() {
           })}
         </div>
 
-        {/* Feature deep-dive */}
-        <div className="mt-16 bg-white rounded-[24px] p-8">
-          <h2 className="text-[25px] font-black text-[#121511] mb-8 text-center">What&apos;s Included</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              { title: 'Discover Creators', body: 'Search 10,000+ vetted Indian influencers by platform, niche, city, and follower count.' },
-              { title: 'Post Campaigns', body: 'Write a brief and let creators apply. Choose who to collaborate with at your price.' },
-              { title: 'Chat & Negotiate', body: 'Message creators before hiring. Negotiate rates, share briefs, agree on deliverables.' },
-              { title: 'Track Results', body: 'Automatic post tracking. Monitor views, likes, comments, and engagement rates.' },
-              { title: 'Safe Pay (Escrow)', body: 'Funds are held in escrow until you approve content. If declined, full refund.' },
-              { title: 'GST Invoices', body: 'Automated GST-compliant invoices for every transaction. Finance team will thank you.' },
-            ].map((f) => (
-              <div key={f.title} className="flex gap-4">
-                <div className="w-10 h-10 bg-[#163300] rounded-full flex items-center justify-center flex-shrink-0">
-                  <Check className="w-5 h-5 text-[#9FE870]" />
-                </div>
-                <div>
-                  <h3 className="text-[16px] font-bold text-[#121511] mb-1">{f.title}</h3>
-                  <p className="text-[14px] text-[#6A6C6A] leading-relaxed">{f.body}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
         {/* FAQ section */}
         <div className="mt-10 bg-white rounded-[24px] p-8">
           <h2 className="text-[25px] font-black text-[#121511] mb-8">Frequently Asked Questions</h2>
