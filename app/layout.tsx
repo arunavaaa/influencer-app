@@ -12,9 +12,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Crayon — India's Influencer Marketplace",
+  title: "GrabCollab — Hire Indian Instagram Creators",
   description:
-    "Connect with verified Indian creators. Pay securely via escrow. GST invoices included. Crayon is India's two-sided influencer marketplace.",
+    "Post a campaign, search verified creators, and hire the perfect match for your brand. India's creator hiring portal.",
 };
 
 export default function RootLayout({

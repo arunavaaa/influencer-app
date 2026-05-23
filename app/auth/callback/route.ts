@@ -4,44 +4,27 @@ import { NextResponse } from 'next/server'
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
+  const next = searchParams.get('next') ?? ''
 
   if (code) {
     const supabase = await createClient()
     const { data, error } = await supabase.auth.exchangeCodeForSession(code)
-    
+
     if (!error && data.user) {
-      // Check if user already has a role set
       const { data: userData } = await supabase
         .from('users')
         .select('role')
         .eq('id', data.user.id)
-        .single()
+        .maybeSingle()
 
-      // If no role yet — check for a next param (set by onboarding Google OAuth)
-      const next = searchParams.get('next')
       if (!userData?.role) {
-        return NextResponse.redirect(`${origin}${next || '/onboarding/creator'}`)
+        // New user — send to onboarding based on next param
+        if (next === 'brand') return NextResponse.redirect(`${origin}/onboarding/brand`)
+        return NextResponse.redirect(`${origin}/onboarding/creator`)
       }
 
-      // Role conflict: brand account trying to join as creator
-      if (userData.role === 'brand' && next === '/onboarding/creator') {
-        return NextResponse.redirect(`${origin}/onboarding/creator?error=brand_account`)
-      }
-
-      // Role conflict: creator account trying to join as brand
-      if (userData.role === 'influencer' && next === '/onboarding/brand') {
-        return NextResponse.redirect(`${origin}/onboarding/brand?error=creator_account`)
-      }
-
-      // If influencer, go to influencer dashboard
-      if (userData.role === 'influencer') {
-        return NextResponse.redirect(`${origin}/influencer/home`)
-      }
-
-      // If brand, go to brand dashboard
-      if (userData.role === 'brand') {
-        return NextResponse.redirect(`${origin}/brand/home`)
-      }
+      if (userData.role === 'brand') return NextResponse.redirect(`${origin}/brand/dashboard`)
+      if (userData.role === 'creator') return NextResponse.redirect(`${origin}/dashboard`)
     }
   }
 

@@ -6,145 +6,86 @@ import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
 
-type Role = {
-  isBrand: boolean
-  isInfluencer: boolean
-}
+type Role = { isBrand: boolean; isCreator: boolean }
+
+const HIDE_PATHS = [
+  '/onboarding', '/login', '/signup',
+  '/brand/dashboard', '/brand/campaigns', '/brand/search', '/brand/messages', '/brand/profile',
+  '/dashboard', '/campaigns', '/applications', '/projects', '/messages', '/profile/edit', '/settings',
+]
 
 export function Navbar() {
   const pathname = usePathname()
   const [user, setUser] = useState<User | null>(null)
-  const [role, setRole] = useState<Role>({ isBrand: false, isInfluencer: false })
-  const [avatarMenuOpen, setAvatarMenuOpen] = useState(false)
+  const [role, setRole] = useState<Role>({ isBrand: false, isCreator: false })
+  const [menuOpen, setMenuOpen] = useState(false)
   const [loading, setLoading] = useState(true)
   const menuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const supabase = createClient()
-
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       setUser(user)
       if (user) {
-        const [{ data: brand }, { data: influencer }] = await Promise.all([
-          supabase.from('brand_profiles').select('id').eq('user_id', user.id).maybeSingle(),
-          supabase.from('influencer_profiles').select('id').eq('user_id', user.id).maybeSingle(),
-        ])
-        setRole({ isBrand: !!brand, isInfluencer: !!influencer })
+        const { data } = await supabase.from('users').select('role').eq('id', user.id).maybeSingle()
+        setRole({ isBrand: data?.role === 'brand', isCreator: data?.role === 'creator' })
       }
       setLoading(false)
     })
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
       setUser(session?.user ?? null)
-      if (!session?.user) {
-        setRole({ isBrand: false, isInfluencer: false })
-        setLoading(false)
-      }
+      if (!session?.user) { setRole({ isBrand: false, isCreator: false }); setLoading(false) }
     })
-
     return () => subscription.unsubscribe()
   }, [])
 
   useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setAvatarMenuOpen(false)
-      }
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false)
     }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
   }, [])
 
-  // Hide navbar on auth/onboarding routes and creator dashboard routes
-  const CREATOR_DASHBOARD = ['/influencer/home', '/influencer/orders', '/influencer/campaigns', '/influencer/applications', '/influencer/messages', '/influencer/earnings', '/influencer/notifications', '/influencer/settings', '/influencer/profile']
-  const hide =
-    pathname?.startsWith('/onboarding') ||
-    pathname?.startsWith('/login') ||
-    pathname?.startsWith('/messages/') ||
-    CREATOR_DASHBOARD.some(p => pathname?.startsWith(p))
+  const hide = HIDE_PATHS.some(p => pathname?.startsWith(p))
   if (hide) return null
 
-  async function handleSignOut() {
+  async function signOut() {
     const supabase = createClient()
     await supabase.auth.signOut()
     window.location.href = '/'
   }
 
-  const initial = user?.email?.[0]?.toUpperCase() || '?'
+  const initial = user?.email?.[0]?.toUpperCase() ?? '?'
 
   return (
-    <nav
-      className="fixed top-0 left-0 right-0 z-50 bg-[#EDEFEB] border-b border-[#E8E8E8]"
-      style={{ height: '64px' }}
-    >
-      <div className="px-5 md:px-[70px] h-full">
-      <div className="max-w-[1360px] mx-auto h-full flex items-center justify-between">
-        {/* Logo */}
-        <Link
-          href={role.isBrand ? '/brand/home' : role.isInfluencer ? '/influencer/home' : '/'}
-          className="text-[20px] font-black text-[#163300] hover:opacity-80 transition-opacity tracking-tight"
-        >
-          Crayon
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-[#EDEFEB] border-b border-[#E8E8E8]" style={{ height: 64 }}>
+      <div className="max-w-[1360px] mx-auto px-5 md:px-[70px] h-full flex items-center justify-between">
+        <Link href="/" className="text-[20px] font-black text-[#163300] hover:opacity-80 transition-opacity tracking-tight">
+          GrabCollab
         </Link>
 
-        {/* Nav Links — center */}
         {!loading && (
           <div className="hidden md:flex items-center gap-1">
             {!user && (
               <>
-                <NavLink href="/login" current={pathname}>Find Creators</NavLink>
                 <NavLink href="/#how-it-works" current={pathname}>How It Works</NavLink>
-                <NavLink href="/pricing" current={pathname}>Pricing</NavLink>
-              </>
-            )}
-
-            {user && role.isBrand && (
-              <>
-                <NavLink href="/brand/discover" current={pathname}>Discover</NavLink>
-                <NavLink href="/brand/orders" current={pathname}>Orders</NavLink>
-                <NavLink href="/brand/campaigns" current={pathname}>Campaigns</NavLink>
-                <NavLink href="/brand/library" current={pathname}>Library</NavLink>
-                <NavLink href="/brand/track" current={pathname}>Track</NavLink>
-              </>
-            )}
-
-            {user && role.isInfluencer && !role.isBrand && (
-              <>
-                <NavLink href="/influencer/home" current={pathname}>Dashboard</NavLink>
-                <NavLink href="/influencer/orders" current={pathname}>Orders</NavLink>
-                <NavLink href="/influencer/campaigns" current={pathname}>Campaigns</NavLink>
-              </>
-            )}
-
-            {user && !role.isBrand && !role.isInfluencer && (
-              <>
-                <NavLink href="/onboarding/creator" current={pathname}>Join as Creator</NavLink>
-                <NavLink href="/onboarding/brand" current={pathname}>Join as Brand</NavLink>
+                <NavLink href="/for-creators" current={pathname}>For Creators</NavLink>
               </>
             )}
           </div>
         )}
 
-        {/* Right side */}
         <div className="flex items-center gap-3">
           {!loading && !user && (
             <>
-              <Link
-                href="/login"
-                className="hidden sm:block text-[15px] font-semibold text-[#121511] hover:opacity-70 transition-opacity px-4 py-2 focus-visible:underline"
-              >
+              <Link href="/login" className="hidden sm:block text-[15px] font-semibold text-[#121511] hover:opacity-70 transition-opacity px-4 py-2">
                 Login
               </Link>
-              <Link
-                href="/onboarding/brand"
-                className="hidden sm:block text-[14px] font-bold text-[#163300] border-2 border-[#163300]/25 px-4 py-2 rounded-full hover:border-[#163300] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#163300]"
-              >
+              <Link href="/signup?role=brand" className="hidden sm:block text-[14px] font-bold text-[#163300] border-2 border-[#163300]/25 px-4 py-2 rounded-full hover:border-[#163300] transition-colors">
                 Join as Brand
               </Link>
-              <Link
-                href="/onboarding/creator"
-                className="bg-[#9FE870] text-[#163300] font-bold text-[14px] px-5 py-2.5 rounded-full hover:bg-[#8fdc60] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#163300]"
-              >
+              <Link href="/signup?role=creator" className="bg-[#9FE870] text-[#163300] font-bold text-[14px] px-5 py-2.5 rounded-full hover:bg-[#8fdc60] transition-colors">
                 Join as Creator
               </Link>
             </>
@@ -153,34 +94,30 @@ export function Navbar() {
           {!loading && user && (
             <div className="relative" ref={menuRef}>
               <button
-                onClick={() => setAvatarMenuOpen(!avatarMenuOpen)}
+                onClick={() => setMenuOpen(v => !v)}
                 className="w-9 h-9 rounded-full bg-[#163300] text-[#9FE870] text-[14px] font-black flex items-center justify-center hover:opacity-80 transition-opacity"
               >
                 {initial}
               </button>
-
-              {avatarMenuOpen && (
+              {menuOpen && (
                 <div className="absolute right-0 top-[calc(100%+8px)] w-52 bg-white rounded-[16px] border border-[#E8E8E8] shadow-lg overflow-hidden z-50">
                   <div className="px-4 py-3 border-b border-[#E8E8E8]">
                     <p className="text-[13px] text-[#6A6C6A] truncate">{user.email}</p>
                   </div>
-                  {role.isInfluencer && (
+                  {role.isCreator && (
                     <>
-                      <DropdownItem href="/influencer/home" label="Dashboard" />
-                      <DropdownItem href="/influencer/profile/edit" label="Edit Profile" />
+                      <DropdownItem href="/dashboard" label="Creator Dashboard" />
+                      <DropdownItem href="/profile/edit" label="Edit Profile" />
                     </>
                   )}
                   {role.isBrand && (
                     <>
-                      <DropdownItem href="/brand/home" label="Dashboard" />
-                      <DropdownItem href="/brand/billing" label="Billing" />
+                      <DropdownItem href="/brand/dashboard" label="Brand Dashboard" />
+                      <DropdownItem href="/brand/profile" label="Edit Profile" />
                     </>
                   )}
                   <div className="border-t border-[#E8E8E8]">
-                    <button
-                      onClick={handleSignOut}
-                      className="w-full text-left px-4 py-3 text-[15px] text-red-600 hover:bg-[#EDEFEB] transition-colors"
-                    >
+                    <button onClick={signOut} className="w-full text-left px-4 py-3 text-[15px] text-red-600 hover:bg-[#EDEFEB] transition-colors">
                       Sign Out
                     </button>
                   </div>
@@ -190,33 +127,15 @@ export function Navbar() {
           )}
         </div>
       </div>
-      </div>
     </nav>
   )
 }
 
-function NavLink({
-  href,
-  current,
-  children,
-}: {
-  href: string
-  current: string | null
-  children: React.ReactNode
-}) {
-  // Match exact path, ignoring hash for how-it-works
-  const hrefPath = href.split('#')[0] || '/'
-  const isActive = current === hrefPath && hrefPath !== '/'
-
+function NavLink({ href, current, children }: { href: string; current: string | null; children: React.ReactNode }) {
+  const path = href.split('#')[0] || '/'
+  const active = current === path && path !== '/'
   return (
-    <Link
-      href={href}
-      className={`text-[15px] font-semibold px-4 py-2 rounded-full transition-colors relative ${
-        isActive
-          ? 'bg-[#121511] text-white font-bold'
-          : 'text-[#4A4C4A] hover:text-[#121511] hover:bg-[#E8E8E8]'
-      }`}
-    >
+    <Link href={href} className={`text-[15px] font-semibold px-4 py-2 rounded-full transition-colors ${active ? 'bg-[#121511] text-white font-bold' : 'text-[#4A4C4A] hover:text-[#121511] hover:bg-[#E8E8E8]'}`}>
       {children}
     </Link>
   )
@@ -224,10 +143,7 @@ function NavLink({
 
 function DropdownItem({ href, label }: { href: string; label: string }) {
   return (
-    <Link
-      href={href}
-      className="block px-4 py-3 text-[15px] text-[#121511] hover:bg-[#EDEFEB] transition-colors"
-    >
+    <Link href={href} className="block px-4 py-3 text-[15px] text-[#121511] hover:bg-[#EDEFEB] transition-colors">
       {label}
     </Link>
   )

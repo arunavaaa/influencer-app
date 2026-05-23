@@ -1,462 +1,140 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { useForm, Controller } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { toast } from 'sonner'
-
+import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
-import { Badge } from '@/components/ui/badge'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
+import { Loader2 } from 'lucide-react'
+import { NICHES, PLATFORMS, DELIVERABLE_FORMATS } from '@/lib/types'
 
-const NICHES = [
-  'Fashion',
-  'Food',
-  'Tech',
-  'Finance',
-  'Fitness',
-  'Travel',
-  'Beauty',
-  'Gaming',
-  'Parenting',
-  'Education',
-  'Lifestyle',
-  'Comedy',
-] as const
+const L = 'block text-[11px] font-black uppercase tracking-[0.14em] text-[#163300] mb-1.5'
+const I = 'w-full px-4 py-3 rounded-2xl border border-[#163300]/20 bg-white text-[15px] text-[#121511] placeholder-[#B0B2AF] focus:outline-none focus:border-[#163300] transition-colors'
 
-const FORMATS: { value: string; label: string }[] = [
-  { value: 'reel', label: 'Reel' },
-  { value: 'post', label: 'Post' },
-  { value: 'story', label: 'Story' },
-  { value: 'ugc', label: 'UGC' },
-]
-
-const PLATFORMS: { value: string; label: string }[] = [
-  { value: 'instagram', label: 'Instagram' },
-]
-
-const TIERS: { value: string; label: string; hint: string }[] = [
-  { value: 'nano', label: 'Nano', hint: '1K–10K' },
-  { value: 'micro', label: 'Micro', hint: '10K–100K' },
-  { value: 'macro', label: 'Macro', hint: '100K–1M' },
-  { value: 'mega', label: 'Mega', hint: '1M+' },
-]
-
-const schema = z.object({
-  title: z
-    .string()
-    .trim()
-    .min(4, 'Title must be at least 4 characters')
-    .max(120, 'Title must be 120 characters or fewer'),
-  description: z
-    .string()
-    .trim()
-    .min(20, 'Description must be at least 20 characters')
-    .max(2000, 'Description must be 2000 characters or fewer'),
-  required_format: z
-    .array(z.string())
-    .min(1, 'Pick at least one content format'),
-  target_platforms: z
-    .array(z.string())
-    .min(1, 'Pick at least one platform'),
-  target_niche: z
-    .array(z.string())
-    .min(1, 'Pick at least one niche'),
-  target_tier: z
-    .array(z.string())
-    .min(1, 'Pick at least one influencer tier'),
-  budget_inr: z
-    .number({ message: 'Enter a budget in INR' })
-    .int('Budget must be a whole number')
-    .positive('Budget must be greater than zero')
-    .max(100000000, 'Budget seems too large'),
-  deadline: z
-    .string()
-    .min(1, 'Pick a deadline')
-    .refine((d) => {
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
-      return new Date(d) >= today
-    }, 'Deadline cannot be in the past'),
-})
-
-type FormValues = z.infer<typeof schema>
-
-export default function NewCampaignPage() {
+export default function NewCampaign() {
   const supabase = createClient()
   const router = useRouter()
-  const [submitting, setSubmitting] = useState(false)
-  const [planChecked, setPlanChecked] = useState(false)
-
-  const todayIso = new Date().toISOString().slice(0, 10)
-
-  useEffect(() => {
-    async function checkPlan() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.replace('/login'); return }
-
-      const { data: brand } = await supabase
-        .from('brand_profiles')
-        .select('subscription_tier')
-        .eq('user_id', user.id)
-        .single()
-
-      if (!brand || brand.subscription_tier === 'free') {
-        router.replace('/brand/campaigns')
-        return
-      }
-      setPlanChecked(true)
-    }
-    checkPlan()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  const {
-    register,
-    handleSubmit,
-    control,
-    formState: { errors },
-  } = useForm<FormValues>({
-    resolver: zodResolver(schema),
-    defaultValues: {
-      title: '',
-      description: '',
-      required_format: [],
-      target_platforms: [],
-      target_niche: [],
-      target_tier: [],
-      budget_inr: undefined as unknown as number,
-      deadline: '',
-    },
+  const [saving, setSaving] = useState(false)
+  const [data, setData] = useState({
+    title: '', goal: '',
+    deliverable_formats: [] as string[],
+    platforms: [] as string[],
+    niches: [] as string[],
+    budget_inr: '',
+    application_deadline: '',
+    content_deadline: '',
   })
 
-  async function onSubmit(values: FormValues) {
-    setSubmitting(true)
-    try {
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser()
-      if (userError || !user) {
-        toast.error('You must be logged in to post a campaign.')
-        router.push('/login')
-        return
-      }
-
-      const { data: brand, error: brandError } = await supabase
-        .from('brand_profiles')
-        .select('id, subscription_tier')
-        .eq('user_id', user.id)
-        .single()
-
-      if (brandError || !brand) {
-        toast.error(
-          'We could not find your brand profile. Please complete brand onboarding first.',
-        )
-        router.push('/onboarding/brand')
-        return
-      }
-
-      if (brand.subscription_tier === 'free') {
-        toast.error('Campaigns are available on Pro and Scale plans.')
-        router.push('/brand/campaigns')
-        return
-      }
-
-      const { error: insertError } = await supabase.from('campaigns').insert({
-        brand_id: brand.id,
-        title: values.title,
-        description: values.description,
-        required_format: values.required_format,
-        target_platforms: values.target_platforms,
-        target_niche: values.target_niche,
-        target_tier: values.target_tier,
-        budget_inr: values.budget_inr,
-        deadline: values.deadline,
-        status: 'open',
-      })
-
-      if (insertError) {
-        console.error(insertError)
-        toast.error(insertError.message || 'Could not save campaign.')
-        return
-      }
-
-      toast.success('Campaign posted — influencers can now apply.')
-      router.push('/brand/campaigns')
-    } catch (err) {
-      console.error(err)
-      toast.error('Something went wrong. Please try again.')
-    } finally {
-      setSubmitting(false)
-    }
+  function toggleArr(k: 'deliverable_formats' | 'platforms' | 'niches', v: string) {
+    setData(p => ({ ...p, [k]: p[k].includes(v) ? p[k].filter(x => x !== v) : [...p[k], v] }))
   }
 
-  if (!planChecked) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-[#9FE870] border-t-transparent rounded-full animate-spin" />
-      </div>
-    )
+  async function submit(status: 'draft' | 'open') {
+    if (!data.title.trim()) { toast.error('Enter a campaign title'); return }
+    if (!data.goal.trim()) { toast.error('Describe the campaign goal'); return }
+    setSaving(true)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { toast.error('Not authenticated'); setSaving(false); return }
+    const { data: brand } = await supabase.from('brand_profiles').select('id').eq('user_id', user.id).maybeSingle()
+    if (!brand) { toast.error('Brand profile not found'); setSaving(false); return }
+
+    const { data: campaign, error } = await supabase.from('campaigns').insert({
+      brand_id: brand.id,
+      title: data.title,
+      goal: data.goal,
+      deliverable_formats: data.deliverable_formats.length ? data.deliverable_formats : null,
+      platforms: data.platforms.length ? data.platforms : null,
+      niches: data.niches.length ? data.niches : null,
+      budget_inr: data.budget_inr ? parseInt(data.budget_inr) : null,
+      application_deadline: data.application_deadline || null,
+      content_deadline: data.content_deadline || null,
+      status,
+    }).select('id').single()
+
+    if (error) { toast.error('Failed to save campaign'); setSaving(false); return }
+    toast.success(status === 'open' ? 'Campaign published!' : 'Saved as draft')
+    router.push(`/brand/campaigns/${campaign.id}`)
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="border-b px-8 py-6">
-        <h1 className="text-2xl font-bold">Post a campaign</h1>
-        <p className="text-muted-foreground mt-1">
-          Tell us what you need and which creators you&rsquo;re looking for.
-        </p>
-      </div>
+    <div className="p-6 md:p-8 max-w-[720px]">
+      <h1 className="text-[28px] font-black text-[#121511] mb-1">Post a Campaign</h1>
+      <p className="text-[15px] text-[#6A6C6A] mb-8">Tell creators what you need. The more detail, the better applications you'll get.</p>
 
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="px-8 py-6 max-w-3xl flex flex-col gap-6"
-      >
-        {/* Brief */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Brief</CardTitle>
-            <CardDescription>
-              A clear title and a thorough description help influencers self-select.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4">
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="title">Campaign title</Label>
-              <Input
-                id="title"
-                placeholder="e.g. Summer skincare reel partnership"
-                aria-invalid={!!errors.title}
-                {...register('title')}
-              />
-              {errors.title && (
-                <p className="text-xs text-destructive">{errors.title.message}</p>
-              )}
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                rows={5}
-                placeholder="What is the product? What story should creators tell? Mandatory talking points, hashtags, dos and don'ts..."
-                aria-invalid={!!errors.description}
-                {...register('description')}
-              />
-              {errors.description && (
-                <p className="text-xs text-destructive">
-                  {errors.description.message}
-                </p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Deliverables */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Deliverables</CardTitle>
-            <CardDescription>
-              What content do you need and where should it run?
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-6">
-            <Controller
-              control={control}
-              name="required_format"
-              render={({ field }) => (
-                <MultiBadgeField
-                  label="Required format"
-                  options={FORMATS}
-                  selected={field.value}
-                  onToggle={(v) => field.onChange(toggle(field.value, v))}
-                  error={errors.required_format?.message}
-                />
-              )}
-            />
-
-            <Controller
-              control={control}
-              name="target_platforms"
-              render={({ field }) => (
-                <MultiBadgeField
-                  label="Target platforms"
-                  options={PLATFORMS}
-                  selected={field.value}
-                  onToggle={(v) => field.onChange(toggle(field.value, v))}
-                  error={errors.target_platforms?.message}
-                />
-              )}
-            />
-          </CardContent>
-        </Card>
-
-        {/* Audience */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Audience</CardTitle>
-            <CardDescription>
-              We&rsquo;ll surface this campaign to influencers that match.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-6">
-            <Controller
-              control={control}
-              name="target_niche"
-              render={({ field }) => (
-                <MultiBadgeField
-                  label="Target niche"
-                  options={NICHES.map((n) => ({ value: n, label: n }))}
-                  selected={field.value}
-                  onToggle={(v) => field.onChange(toggle(field.value, v))}
-                  error={errors.target_niche?.message}
-                />
-              )}
-            />
-
-            <Controller
-              control={control}
-              name="target_tier"
-              render={({ field }) => (
-                <MultiBadgeField
-                  label="Target tier (followers)"
-                  options={TIERS.map((t) => ({
-                    value: t.value,
-                    label: `${t.label} · ${t.hint}`,
-                  }))}
-                  selected={field.value}
-                  onToggle={(v) => field.onChange(toggle(field.value, v))}
-                  error={errors.target_tier?.message}
-                />
-              )}
-            />
-          </CardContent>
-        </Card>
-
-        {/* Budget + deadline */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Budget &amp; deadline</CardTitle>
-            <CardDescription>
-              All amounts in INR. Funds are held in escrow until content is approved.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="budget_inr">Budget (₹)</Label>
-              <Input
-                id="budget_inr"
-                type="number"
-                inputMode="numeric"
-                min={1}
-                step={1}
-                placeholder="e.g. 50000"
-                aria-invalid={!!errors.budget_inr}
-                {...register('budget_inr', { valueAsNumber: true })}
-              />
-              {errors.budget_inr && (
-                <p className="text-xs text-destructive">
-                  {errors.budget_inr.message}
-                </p>
-              )}
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="deadline">Deadline</Label>
-              <Input
-                id="deadline"
-                type="date"
-                min={todayIso}
-                aria-invalid={!!errors.deadline}
-                {...register('deadline')}
-              />
-              {errors.deadline && (
-                <p className="text-xs text-destructive">
-                  {errors.deadline.message}
-                </p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        <div className="flex gap-3 justify-end">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => router.back()}
-            disabled={submitting}
-          >
-            Cancel
-          </Button>
-          <Button type="submit" disabled={submitting}>
-            {submitting ? 'Posting…' : 'Post campaign'}
-          </Button>
+      <div className="space-y-6">
+        <div className="bg-white rounded-[24px] p-6 space-y-5">
+          <div>
+            <label className={L}>Campaign Title *</label>
+            <input className={I} placeholder="e.g. Reel for our new skincare launch" value={data.title} onChange={e => setData(p => ({ ...p, title: e.target.value }))} />
+          </div>
+          <div>
+            <label className={L}>Goal / Description *</label>
+            <textarea className={`${I} resize-none`} rows={4} placeholder="What do you want creators to do? What message should they convey? Any do's and don'ts?" value={data.goal} onChange={e => setData(p => ({ ...p, goal: e.target.value }))} />
+          </div>
         </div>
-      </form>
-    </div>
-  )
-}
 
-function toggle(arr: string[], value: string) {
-  return arr.includes(value) ? arr.filter((v) => v !== value) : [...arr, value]
-}
+        <div className="bg-white rounded-[24px] p-6 space-y-5">
+          <div>
+            <label className={L}>Deliverable Format</label>
+            <div className="flex flex-wrap gap-2 mt-1">
+              {DELIVERABLE_FORMATS.map(f => (
+                <button key={f} onClick={() => toggleArr('deliverable_formats', f)}
+                  className={`px-4 py-2 rounded-full text-[13px] font-semibold border-2 transition-all ${data.deliverable_formats.includes(f) ? 'bg-[#163300] text-[#9FE870] border-[#163300]' : 'bg-white text-[#4A4C4A] border-[#E8E8E8] hover:border-[#163300]/40'}`}>
+                  {f}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className={L}>Platform</label>
+            <div className="flex flex-wrap gap-2 mt-1">
+              {PLATFORMS.map(p => (
+                <button key={p} onClick={() => toggleArr('platforms', p)}
+                  className={`px-4 py-2 rounded-full text-[13px] font-semibold border-2 transition-all ${data.platforms.includes(p) ? 'bg-[#163300] text-[#9FE870] border-[#163300]' : 'bg-white text-[#4A4C4A] border-[#E8E8E8] hover:border-[#163300]/40'}`}>
+                  {p}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className={L}>Creator Niche</label>
+            <div className="flex flex-wrap gap-2 mt-1">
+              {NICHES.slice(0, 10).map(n => (
+                <button key={n} onClick={() => toggleArr('niches', n)}
+                  className={`px-4 py-2 rounded-full text-[13px] font-semibold border-2 transition-all ${data.niches.includes(n) ? 'bg-[#163300] text-[#9FE870] border-[#163300]' : 'bg-white text-[#4A4C4A] border-[#E8E8E8] hover:border-[#163300]/40'}`}>
+                  {n}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
 
-type Option = { value: string; label: string }
-
-function MultiBadgeField({
-  label,
-  options,
-  selected,
-  onToggle,
-  error,
-}: {
-  label: string
-  options: Option[]
-  selected: string[]
-  onToggle: (value: string) => void
-  error?: string
-}) {
-  return (
-    <div className="flex flex-col gap-2">
-      <Label>{label}</Label>
-      <div className="flex flex-wrap gap-2">
-        {options.map((opt) => {
-          const active = selected.includes(opt.value)
-          return (
-            <Badge
-              key={opt.value}
-              variant={active ? 'default' : 'outline'}
-              className="cursor-pointer text-sm py-1.5 px-3 select-none"
-              onClick={() => onToggle(opt.value)}
-              role="checkbox"
-              aria-checked={active}
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === ' ' || e.key === 'Enter') {
-                  e.preventDefault()
-                  onToggle(opt.value)
-                }
-              }}
-            >
-              {opt.label}
-            </Badge>
-          )
-        })}
+        <div className="bg-white rounded-[24px] p-6 space-y-5">
+          <div>
+            <label className={L}>Budget (₹) — Optional</label>
+            <input className={I} type="number" placeholder="e.g. 10000" value={data.budget_inr} onChange={e => setData(p => ({ ...p, budget_inr: e.target.value }))} />
+            <p className="text-[12px] text-[#9A9C9A] mt-1">Leave blank if you prefer to discuss with applicants.</p>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className={L}>Application Deadline</label>
+              <input type="date" className={I} value={data.application_deadline} onChange={e => setData(p => ({ ...p, application_deadline: e.target.value }))} />
+            </div>
+            <div>
+              <label className={L}>Content Deadline</label>
+              <input type="date" className={I} value={data.content_deadline} onChange={e => setData(p => ({ ...p, content_deadline: e.target.value }))} />
+            </div>
+          </div>
+        </div>
       </div>
-      {error && <p className="text-xs text-destructive">{error}</p>}
+
+      <div className="mt-8 flex gap-3 sticky bottom-0 bg-[#EDEFEB] py-4 -mx-8 px-8">
+        <button onClick={() => submit('draft')} disabled={saving} className="px-6 py-3 border-2 border-[#163300]/30 rounded-full text-[14px] font-bold text-[#163300] hover:border-[#163300] transition-colors disabled:opacity-60">
+          Save as Draft
+        </button>
+        <button onClick={() => submit('open')} disabled={saving} className="flex-1 bg-[#163300] text-[#9FE870] font-bold text-[15px] py-3 rounded-full hover:bg-[#1f4a00] transition-colors disabled:opacity-60 flex items-center justify-center gap-2">
+          {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</> : 'Publish Campaign →'}
+        </button>
+      </div>
     </div>
   )
 }

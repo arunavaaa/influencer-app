@@ -1,50 +1,87 @@
-## Design & Feature Reference
-- Before writing ANY UI code, read WISE_DESIGN_SYSTEM.pdf for the complete design system
-- Before building ANY feature, read COLLABSTR_REFERENCE.pdf for feature parity reference
-- Design target: Wise.com visual style (dark green #163300, lime green #9FE870, Inter font, 24px card radius)
-- Functional target: Collabstr.com features adapted for India (₹ pricing, Razorpay, GST, regional platforms)
-
-# Project: Influencer Marketplace (India)
-
-A two-sided influencer marketing marketplace connecting brands with influencers across India.
+# Project: GrabCollab
+A creator hiring portal connecting Indian Instagram creators with brands.
+Phase 1 MVP — no payments, no escrow, no contracts.
 
 ## Two user types
-- **Influencers** — create profiles, set packages, receive campaign invites, get paid
-- **Brands** — discover influencers, post campaigns, manage deals, pay via escrow
+- Creators — list their profile, browse campaigns, apply, chat with brands
+- Brands — post campaigns, search creators, shortlist, chat with creators
 
 ## Stack
 - Next.js 14 App Router + TypeScript
-- Supabase (Postgres + Auth + Realtime + Storage) — Mumbai region
+- Supabase (Postgres + Auth + Realtime)
 - shadcn/ui + Tailwind CSS
-- Razorpay Route for escrow payments
-- Resend for transactional email
+- Resend for email notifications
 - PostHog for analytics
-- Zod for validation, react-hook-form for forms
 
-## Folder structure
-- app/(auth)/ — login, signup, onboarding flows
-- app/(influencer)/ — influencer dashboard, profile, applications
-- app/(brand)/ — brand dashboard, discover, campaigns
-- app/api/ — all API routes
-- lib/supabase/ — supabase client helpers
-- lib/types/ — TypeScript types matching DB schema
-- lib/validations/ — Zod schemas
-- components/shared/ — shared components used by both user types
-- components/ui/ — shadcn components (do not edit)
+## Design System
+Use the exact same design system, component styles, and UI patterns 
+already used in this codebase. Do not introduce new styles. 
+Be consistent with what's already built.
+- All amounts in ₹ with Indian number formatting
 
-## Critical business rules
-- NEVER expose handle_encrypted to brand users — RLS enforces this at DB level
-- Influencer social handles are masked (@fashion_***) until escrow is funded
-- All amounts in INR, stored in paise (multiply by 100 for Razorpay)
-- Every message is scanned for phone numbers, emails, @handles, UPI IDs before saving
-- Contracts auto-generate when brand accepts an application
-- Content auto-approves 72 hours after submission if brand does not respond
-- Non-circumvention clause is 12 months from contract signing
+## URL Structure
+Public:
+- / → Landing page
+- /for-creators → Creator landing page
+- /login → Login
+- /signup → Signup
+- /[username] → Creator public profile
+- /brands/[id] → Brand public profile
+
+Brand app:
+- /brand/dashboard
+- /brand/campaigns
+- /brand/campaigns/new
+- /brand/campaigns/[id]
+- /brand/search
+- /brand/messages
+- /brand/messages/[id]
+- /brand/profile
+
+Creator app:
+- /dashboard
+- /campaigns
+- /applications
+- /projects
+- /messages
+- /messages/[id]
+- /profile/edit
+- /settings
+
+Onboarding:
+- /onboarding/brand
+- /onboarding/creator
+
+## Critical rules
+- No payment UI anywhere
+- No escrow references
+- No contract generation
+- Creators self-report follower counts in Phase 1 (no Instagram API)
+- Chat unlocks for brands after shortlisting OR direct search message request
+- Creator must accept/decline brand message requests from search
+- All amounts in ₹
+- Use sonner for toasts
+- Always show loading and empty states
+
+## Database tables in use (Phase 1)
+users, creator_profiles, brand_profiles, content_packages,
+campaigns, applications, conversations, messages, notifications
+
+## Tables NOT used in Phase 1
+contracts, content_submissions, transactions, bypass_reports,
+audit_logs, social_accounts
 
 ## Code rules
 - Use server components by default, add "use client" only when needed
 - All forms use react-hook-form + zod validation
 - All Supabase calls in server components use the server client
 - All Supabase calls in client components use the browser client
-- Use sonner for toast notifications (not the deprecated toast component)
+- Use sonner for toast notifications
 - Always handle loading and error states in UI
+- Read CREATOR_PERSONAS.md before every UI decision
+- Ask: "Would Sneha (nano creator, first deal) understand this?"
+- Ask: "Would Meera (parent creator, not technical) complete this?"
+- Every page must work on mobile (375px) and desktop (1440px)
+- Use Inter font throughout
+- Never hardcode data — always fetch from Supabase
+- Commit after each major page: git add . && git commit -m "feat: [page]" && git push
