@@ -23,6 +23,16 @@ export async function GET(request: Request) {
         return NextResponse.redirect(`${origin}${next || '/onboarding/creator'}`)
       }
 
+      // Role conflict: brand account trying to join as creator
+      if (userData.role === 'brand' && next === '/onboarding/creator') {
+        return NextResponse.redirect(`${origin}/onboarding/creator?error=brand_account`)
+      }
+
+      // Role conflict: creator account trying to join as brand
+      if (userData.role === 'influencer' && next === '/onboarding/brand') {
+        return NextResponse.redirect(`${origin}/onboarding/brand?error=creator_account`)
+      }
+
       // If influencer, go to influencer dashboard
       if (userData.role === 'influencer') {
         return NextResponse.redirect(`${origin}/influencer/home`)

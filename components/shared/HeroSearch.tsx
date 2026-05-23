@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Search } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
-const PLATFORMS = ['Instagram', 'YouTube', 'Moj', 'ShareChat']
+const PLATFORMS = ['Instagram']
 
 const ALL_CATEGORIES = [
   'Lifestyle', 'Fashion', 'Beauty & Skincare', 'Food & Drink',

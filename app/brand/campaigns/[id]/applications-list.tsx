@@ -71,10 +71,20 @@ export function ApplicationsList({
   initialApplications,
   campaignId,
   brandId,
+  campaignTitle,
+  campaignDescription,
+  campaignDeadline,
+  campaignFormat,
+  campaignPlatform,
 }: {
   initialApplications: Application[]
   campaignId: string
   brandId: string
+  campaignTitle: string | null
+  campaignDescription: string | null
+  campaignDeadline: string | null
+  campaignFormat: string | null
+  campaignPlatform: string | null
 }) {
   const supabase = createClient()
   const [applications, setApplications] = useState(initialApplications)
@@ -108,7 +118,11 @@ export function ApplicationsList({
           brand_id: brandId,
           agreed_price_inr: app.proposed_price_inr ?? 0,
           non_circumvention_expiry: plus12MonthsIso(),
-          status: 'active',
+          status: 'pending_acceptance',
+          hired_at: new Date().toISOString(),
+          brief_product: campaignTitle,
+          brief_message: campaignDescription,
+          brief_golive_date: campaignDeadline || null,
         })
         .select('id')
         .single<{ id: string }>()

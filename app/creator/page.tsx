@@ -16,7 +16,7 @@ import {
 export const metadata = {
   title: 'Earn Money as a Creator — Crayon',
   description:
-    'Get paid to work with Indian brands you love. Join 10,000+ creators earning from brand collaborations on Instagram, YouTube, Moj & ShareChat — with zero contracts and UPI payouts.',
+    'Get paid to work with Indian brands you love. Join creators earning from brand collaborations on Instagram — with zero contracts and UPI payouts.',
 }
 
 export default function CreatorPage() {
@@ -70,7 +70,7 @@ function Hero() {
           </h1>
 
           <p className="text-[17px] md:text-[19px] text-white/55 leading-relaxed max-w-[520px] mb-10">
-            Turn your Instagram, YouTube, Moj or ShareChat following into a revenue stream. Brands come to you, pay upfront via escrow, and you keep full creative control.
+            Turn your Instagram following into a revenue stream. Brands come to you, pay upfront via escrow, and you keep full creative control. YouTube & more coming soon.
           </p>
 
           <div className="flex flex-wrap gap-3 mb-12">
@@ -108,7 +108,7 @@ function Hero() {
         <div className="hidden lg:flex flex-col gap-5">
           {[
             { brand: 'Mamaearth', amount: '₹12,000', type: 'Instagram Reel', time: 'Just now', color: 'from-[#9FE870] to-[#163300]', cls: 'fa' },
-            { brand: 'boAt Audio', amount: '₹28,500', type: 'YouTube Review', time: '2 min ago', color: 'from-violet-400 to-purple-700', cls: 'fb' },
+            { brand: 'boAt Audio', amount: '₹28,500', type: 'Instagram Reel', time: '2 min ago', color: 'from-violet-400 to-purple-700', cls: 'fb' },
             { brand: 'Nykaa', amount: '₹8,000', type: 'UGC Package', time: '5 min ago', color: 'from-pink-400 to-rose-600', cls: 'fc' },
           ].map((n, i) => (
             <div
@@ -164,37 +164,40 @@ function SocialProof() {
 /* ────────────── PLATFORMS ────────────── */
 function Platforms() {
   const platforms = [
-    { name: 'Instagram', desc: 'Posts, Reels & Stories', color: 'from-pink-400 to-rose-500', followers: 'Any size' },
-    { name: 'YouTube', desc: 'Long-form & Shorts', color: 'from-red-400 to-red-600', followers: 'Any size' },
-    { name: 'Moj', desc: 'Short-form Videos', color: 'from-emerald-400 to-teal-600', followers: 'Any size' },
-    { name: 'ShareChat', desc: 'Regional Language Content', color: 'from-blue-400 to-indigo-600', followers: 'Any size' },
-    { name: 'UGC', desc: 'No following needed', color: 'from-[#9FE870] to-[#163300]', followers: '0 followers OK' },
+    { name: 'Instagram', desc: 'Posts, Reels & Stories', color: 'from-pink-400 to-rose-500', followers: 'Any size', live: true },
+    { name: 'UGC', desc: 'No following needed', color: 'from-[#9FE870] to-[#163300]', followers: '0 followers OK', live: true },
+    { name: 'YouTube', desc: 'Long-form & Shorts', color: 'from-red-400 to-red-600', followers: 'Coming soon', live: false },
+    { name: 'Moj', desc: 'Short-form Videos', color: 'from-emerald-400 to-teal-600', followers: 'Coming soon', live: false },
+    { name: 'ShareChat', desc: 'Regional Content', color: 'from-blue-400 to-indigo-600', followers: 'Coming soon', live: false },
   ]
 
   return (
     <section className="bg-[#EDEFEB] py-[80px] px-5 md:px-[70px]">
       <div className="max-w-[1360px] mx-auto">
         <div className="max-w-[700px] mb-12">
-          <p className="text-[12px] font-bold uppercase tracking-[0.18em] text-[#163300] mb-3">Platforms</p>
+          <p className="text-[12px] font-bold uppercase tracking-[0.18em] text-[#163300] mb-3">Platform</p>
           <h2 className="text-[48px] md:text-[64px] font-black text-[#121511] uppercase leading-[0.88] mb-4">
-            Monetize any<br />
-            <span className="text-[#163300]">platform you&rsquo;re on.</span>
+            Monetize your<br />
+            <span className="text-[#163300]">Instagram.</span>
           </h2>
           <p className="text-[16px] text-[#6A6C6A] leading-relaxed">
-            List your services across multiple platforms. Even if you have zero followers — UGC creators earn real money producing content for brands.
+            We&rsquo;re starting with Instagram — Reels, Posts, Stories, and UGC. Even if you have a small following, brands pay real money for quality content. YouTube & more coming soon.
           </p>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
           {platforms.map((p) => (
-            <div key={p.name} className="bg-white rounded-[20px] overflow-hidden hover:-translate-y-1 transition-transform">
-              <div className={`h-[100px] bg-gradient-to-br ${p.color} flex items-center justify-center`}>
+            <div key={p.name} className={`bg-white rounded-[20px] overflow-hidden transition-transform ${p.live ? 'hover:-translate-y-1' : 'opacity-50'}`}>
+              <div className={`h-[100px] bg-gradient-to-br ${p.color} flex items-center justify-center relative`}>
                 <span className="text-[28px] font-black text-white/20 uppercase tracking-tight">{p.name[0]}</span>
+                {!p.live && (
+                  <span className="absolute top-2 right-2 text-[10px] font-bold bg-white/20 text-white px-2 py-0.5 rounded-full">Soon</span>
+                )}
               </div>
               <div className="p-4">
                 <p className="text-[15px] font-black text-[#121511] mb-1">{p.name}</p>
                 <p className="text-[12px] text-[#6A6C6A] mb-3">{p.desc}</p>
-                <span className="text-[11px] font-bold px-2.5 py-1 bg-[#EDEFEB] text-[#163300] rounded-full">
+                <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full ${p.live ? 'bg-[#EDEFEB] text-[#163300]' : 'bg-[#F5F5F5] text-[#AAAAAA]'}`}>
                   {p.followers}
                 </span>
               </div>
@@ -212,7 +215,7 @@ function HowItWorks() {
     {
       n: '01',
       title: 'Build Your Creator Profile',
-      body: 'Set up your storefront in minutes. Add your platforms, set rates per content type (post, reel, story, video, UGC), and showcase your best work. Your Crayon profile IS your media kit.',
+      body: 'Set up your storefront in minutes. Add your Instagram, set rates per content type (reel, post, story, UGC), and showcase your best work. Your Crayon profile IS your media kit.',
       tag: 'Setup Once',
       detail: 'Takes under 10 minutes',
     },
@@ -550,7 +553,7 @@ function FAQ() {
     },
     {
       q: 'Which platforms can I list services for?',
-      a: 'Instagram (posts, reels, stories), YouTube (videos, shorts), Moj, ShareChat, and UGC (content delivery without posting to your own audience). More platforms coming soon.',
+      a: 'Instagram (posts, reels, stories) and UGC (content delivery without posting to your own audience). YouTube, Moj, and ShareChat are coming soon.',
     },
   ]
 
@@ -616,7 +619,7 @@ function FinalCTA() {
             Create My Profile Free →
           </Link>
           <Link
-            href="/brand/discover"
+            href="/influencer/campaigns"
             className="bg-white/10 text-white border border-white/20 font-bold text-[18px] px-12 py-5 rounded-full hover:bg-white/20 transition-colors"
           >
             Browse Open Campaigns

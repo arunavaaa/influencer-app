@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -41,15 +41,10 @@ const FORMATS: { value: string; label: string }[] = [
   { value: 'post', label: 'Post' },
   { value: 'story', label: 'Story' },
   { value: 'ugc', label: 'UGC' },
-  { value: 'youtube_video', label: 'YouTube Video' },
-  { value: 'youtube_short', label: 'YouTube Short' },
 ]
 
 const PLATFORMS: { value: string; label: string }[] = [
   { value: 'instagram', label: 'Instagram' },
-  { value: 'youtube', label: 'YouTube' },
-  { value: 'moj', label: 'Moj' },
-  { value: 'sharechat', label: 'ShareChat' },
 ]
 
 const TIERS: { value: string; label: string; hint: string }[] = [
@@ -103,8 +98,30 @@ export default function NewCampaignPage() {
   const supabase = createClient()
   const router = useRouter()
   const [submitting, setSubmitting] = useState(false)
+  const [planChecked, setPlanChecked] = useState(false)
 
   const todayIso = new Date().toISOString().slice(0, 10)
+
+  useEffect(() => {
+    async function checkPlan() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { router.replace('/login'); return }
+
+      const { data: brand } = await supabase
+        .from('brand_profiles')
+        .select('subscription_tier')
+        .eq('user_id', user.id)
+        .single()
+
+      if (!brand || brand.subscription_tier === 'free') {
+        router.replace('/brand/campaigns')
+        return
+      }
+      setPlanChecked(true)
+    }
+    checkPlan()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const {
     register,
@@ -140,7 +157,7 @@ export default function NewCampaignPage() {
 
       const { data: brand, error: brandError } = await supabase
         .from('brand_profiles')
-        .select('id')
+        .select('id, subscription_tier')
         .eq('user_id', user.id)
         .single()
 
@@ -149,6 +166,12 @@ export default function NewCampaignPage() {
           'We could not find your brand profile. Please complete brand onboarding first.',
         )
         router.push('/onboarding/brand')
+        return
+      }
+
+      if (brand.subscription_tier === 'free') {
+        toast.error('Campaigns are available on Pro and Scale plans.')
+        router.push('/brand/campaigns')
         return
       }
 
@@ -179,6 +202,14 @@ export default function NewCampaignPage() {
     } finally {
       setSubmitting(false)
     }
+  }
+
+  if (!planChecked) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-[#9FE870] border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
   }
 
   return (

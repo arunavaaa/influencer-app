@@ -26,8 +26,12 @@ export type OnboardingData = {
   followerCount: number | null
   engagementRate: number | null
   contentUrls: string[]
+  upiId: string
+  bankAccountName: string
+  bankAccountNo: string
+  bankIfsc: string
   packages: {
-    format: 'Reel' | 'Post' | 'Story'
+    format: 'reel' | 'post' | 'story' | 'ugc'
     price: number | null
     deliveryDays: number
     revisions: number
@@ -71,28 +75,19 @@ export default function CreatorProfilePreview({ data, isLive = false }: Props) {
     .sort((a, b) => a - b)[0] ?? null
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="flex flex-col">
       {/* Header label */}
       <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#163300] mb-4">
         Your Profile Preview
       </p>
 
       {/* Card */}
-      <div className="bg-white rounded-3xl overflow-hidden shadow-sm border border-[#163300]/8 flex-1 flex flex-col">
-        {/* Cover banner */}
-        <div className="h-[100px] bg-gradient-to-br from-[#9FE870] to-[#163300] relative flex-shrink-0">
-          {isLive && (
-            <span className="absolute top-3 right-3 bg-[#9FE870] text-[#163300] text-[11px] font-black px-3 py-1 rounded-full uppercase tracking-wide">
-              Live
-            </span>
-          )}
-        </div>
-
+      <div className="bg-white rounded-3xl overflow-hidden shadow-sm border border-[#163300]/8">
         {/* Profile section */}
-        <div className="px-5 pb-4 flex-1 overflow-y-auto">
-          {/* Avatar (overlapping cover) */}
-          <div className="flex items-end justify-between -mt-8 mb-3">
-            <div className="w-[68px] h-[68px] rounded-full border-4 border-white overflow-hidden bg-[#EDEFEB] flex items-center justify-center flex-shrink-0">
+        <div className="px-5 pt-5 pb-4">
+          {/* Avatar + verified badge */}
+          <div className="flex items-center justify-between mb-3">
+            <div className="w-[68px] h-[68px] rounded-full overflow-hidden bg-[#EDEFEB] flex items-center justify-center flex-shrink-0">
               {hasPhoto ? (
                 <img src={data.profilePhotoUrl!} alt="Profile" className="w-full h-full object-cover" />
               ) : (

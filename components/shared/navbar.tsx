@@ -55,8 +55,13 @@ export function Navbar() {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
 
-  // Hide navbar on auth/onboarding routes — all hooks must be called first
-  const hide = pathname?.startsWith('/onboarding') || pathname?.startsWith('/login')
+  // Hide navbar on auth/onboarding routes and creator dashboard routes
+  const CREATOR_DASHBOARD = ['/influencer/home', '/influencer/orders', '/influencer/campaigns', '/influencer/applications', '/influencer/messages', '/influencer/earnings', '/influencer/notifications', '/influencer/settings', '/influencer/profile']
+  const hide =
+    pathname?.startsWith('/onboarding') ||
+    pathname?.startsWith('/login') ||
+    pathname?.startsWith('/messages/') ||
+    CREATOR_DASHBOARD.some(p => pathname?.startsWith(p))
   if (hide) return null
 
   async function handleSignOut() {
@@ -76,7 +81,7 @@ export function Navbar() {
       <div className="max-w-[1360px] mx-auto h-full flex items-center justify-between">
         {/* Logo */}
         <Link
-          href="/"
+          href={role.isBrand ? '/brand/home' : role.isInfluencer ? '/influencer/home' : '/'}
           className="text-[20px] font-black text-[#163300] hover:opacity-80 transition-opacity tracking-tight"
         >
           Crayon
@@ -96,6 +101,7 @@ export function Navbar() {
             {user && role.isBrand && (
               <>
                 <NavLink href="/brand/discover" current={pathname}>Discover</NavLink>
+                <NavLink href="/brand/orders" current={pathname}>Orders</NavLink>
                 <NavLink href="/brand/campaigns" current={pathname}>Campaigns</NavLink>
                 <NavLink href="/brand/library" current={pathname}>Library</NavLink>
                 <NavLink href="/brand/track" current={pathname}>Track</NavLink>
@@ -105,13 +111,16 @@ export function Navbar() {
             {user && role.isInfluencer && !role.isBrand && (
               <>
                 <NavLink href="/influencer/home" current={pathname}>Dashboard</NavLink>
-                <NavLink href="/influencer/home" current={pathname}>My Packages</NavLink>
+                <NavLink href="/influencer/orders" current={pathname}>Orders</NavLink>
                 <NavLink href="/influencer/campaigns" current={pathname}>Campaigns</NavLink>
               </>
             )}
 
             {user && !role.isBrand && !role.isInfluencer && (
-              <NavLink href="/onboarding/select-role" current={pathname}>Finish Setup</NavLink>
+              <>
+                <NavLink href="/onboarding/creator" current={pathname}>Join as Creator</NavLink>
+                <NavLink href="/onboarding/brand" current={pathname}>Join as Brand</NavLink>
+              </>
             )}
           </div>
         )}
@@ -127,7 +136,7 @@ export function Navbar() {
                 Login
               </Link>
               <Link
-                href="/login"
+                href="/onboarding/brand"
                 className="hidden sm:block text-[14px] font-bold text-[#163300] border-2 border-[#163300]/25 px-4 py-2 rounded-full hover:border-[#163300] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#163300]"
               >
                 Join as Brand
@@ -156,14 +165,17 @@ export function Navbar() {
                     <p className="text-[13px] text-[#6A6C6A] truncate">{user.email}</p>
                   </div>
                   {role.isInfluencer && (
-                    <DropdownItem href="/influencer/home" label="My Profile" />
+                    <>
+                      <DropdownItem href="/influencer/home" label="Dashboard" />
+                      <DropdownItem href="/influencer/profile/edit" label="Edit Profile" />
+                    </>
                   )}
                   {role.isBrand && (
-                    <DropdownItem href="/brand/home" label="Dashboard" />
+                    <>
+                      <DropdownItem href="/brand/home" label="Dashboard" />
+                      <DropdownItem href="/brand/billing" label="Billing" />
+                    </>
                   )}
-                  <DropdownItem href="/billing" label="Billing" />
-                  <DropdownItem href="/account" label="Account" />
-                  <DropdownItem href="/referrals" label="Referrals" />
                   <div className="border-t border-[#E8E8E8]">
                     <button
                       onClick={handleSignOut}

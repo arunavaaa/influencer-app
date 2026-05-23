@@ -8,7 +8,7 @@ type ContentItem = {
   id: string
   submitted_at: string
   status: string
-  file_url: string | null
+  content_url: string | null
   contract: {
     id: string
     influencer_profiles: { display_name: string }
@@ -48,10 +48,20 @@ export default function LibraryPage() {
 
     if (!brand) { setLoading(false); return }
 
+    // Fetch contract IDs for this brand first, then get their submissions
+    const { data: contracts } = await supabase
+      .from('contracts')
+      .select('id')
+      .eq('brand_id', brand.id)
+
+    const contractIds = (contracts || []).map((c) => c.id)
+
+    if (contractIds.length === 0) { setLoading(false); return }
+
     const { data } = await supabase
       .from('content_submissions')
       .select(`
-        id, submitted_at, status, file_url,
+        id, submitted_at, status, content_url,
         contract:contracts(
           id,
           influencer_profiles(display_name),
@@ -59,7 +69,7 @@ export default function LibraryPage() {
           content_packages(platform, format)
         )
       `)
-      .eq('contracts.brand_id', brand.id)
+      .in('contract_id', contractIds)
       .order('submitted_at', { ascending: false })
 
     setItems((data || []) as unknown as ContentItem[])
@@ -110,9 +120,6 @@ export default function LibraryPage() {
           >
             <option value="">All Platforms</option>
             <option value="instagram">Instagram</option>
-            <option value="youtube">YouTube</option>
-            <option value="moj">Moj</option>
-            <option value="sharechat">ShareChat</option>
           </select>
           <select
             value={campaignFilter}
@@ -197,9 +204,9 @@ export default function LibraryPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        {item.file_url ? (
+                        {item.content_url ? (
                           <a
-                            href={item.file_url}
+                            href={item.content_url}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-[14px] font-semibold text-[#163300] hover:text-[#9FE870] transition-colors"

@@ -92,7 +92,7 @@ export default function LoginPage() {
 
         <div className="w-full max-w-[360px] mx-auto">
           <h1 className="text-[28px] font-black text-[#121511] mb-1">Sign in</h1>
-          <p className="text-[15px] text-[#6A6C6A] mb-8">Welcome back. Let&rsquo;s get you earning.</p>
+          <p className="text-[15px] text-[#6A6C6A] mb-8">Welcome back. Sign in to continue.</p>
 
           {/* Google */}
           <button
@@ -132,9 +132,14 @@ export default function LoginPage() {
 
           {/* Password */}
           <div className="mb-6">
-            <label className="block text-[11px] font-black uppercase tracking-[0.14em] text-[#6A6C6A] mb-1.5">
-              Password
-            </label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-[11px] font-black uppercase tracking-[0.14em] text-[#6A6C6A]">
+                Password
+              </label>
+              <Link href="/forgot-password" className="text-[12px] text-[#163300] font-semibold hover:underline">
+                Forgot password?
+              </Link>
+            </div>
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
@@ -164,17 +169,11 @@ export default function LoginPage() {
           </button>
 
           {/* Sign up links */}
-          <div className="space-y-3 text-center">
+          <div className="text-center">
             <p className="text-[14px] text-[#6A6C6A]">
               New creator?{' '}
               <Link href="/onboarding/creator" className="text-[#163300] font-bold hover:underline">
                 Create your profile free →
-              </Link>
-            </p>
-            <p className="text-[14px] text-[#6A6C6A]">
-              Hiring creators?{' '}
-              <Link href="/onboarding/brand" className="text-[#163300] font-bold hover:underline">
-                Join as a brand →
               </Link>
             </p>
           </div>

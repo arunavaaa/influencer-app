@@ -2,12 +2,10 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { Send, AlertTriangle } from 'lucide-react'
 
 import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
 import { describeReasons, scanAndRedact } from '@/lib/content-scanner'
-import { cn } from '@/lib/utils'
 
 export type Message = {
   id: string
@@ -23,13 +21,21 @@ export type Message = {
 function formatTime(d: string | null) {
   if (!d) return ''
   try {
-    return new Date(d).toLocaleTimeString('en-IN', {
-      hour: '2-digit',
-      minute: '2-digit',
-    })
+    return new Date(d).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
   } catch {
     return ''
   }
+}
+
+function formatDate(d: string | null) {
+  if (!d) return ''
+  const date = new Date(d)
+  const today = new Date()
+  const yesterday = new Date(today)
+  yesterday.setDate(yesterday.getDate() - 1)
+  if (date.toDateString() === today.toDateString()) return 'Today'
+  if (date.toDateString() === yesterday.toDateString()) return 'Yesterday'
+  return date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
 export function Chat({
@@ -48,52 +54,46 @@ export function Chat({
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
   const [lastRedaction, setLastRedaction] = useState<string | null>(null)
-
   const scrollRef = useRef<HTMLDivElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  // Realtime subscription
   useEffect(() => {
     const channel = supabase
       .channel(`messages:${contractId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-          filter: `contract_id=eq.${contractId}`,
-        },
-        (payload) => {
-          const newMsg = payload.new as Message
-          setMessages((prev) =>
-            prev.some((m) => m.id === newMsg.id) ? prev : [...prev, newMsg],
-          )
-        },
-      )
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages',
+        filter: `contract_id=eq.${contractId}`,
+      }, (payload) => {
+        const newMsg = payload.new as Message
+        setMessages(prev => prev.some(m => m.id === newMsg.id) ? prev : [...prev, newMsg])
+      })
       .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
+    return () => { supabase.removeChannel(channel) }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contractId])
 
-  // Auto-scroll on new messages
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight
     }
   }, [messages.length])
 
+  function autoResize() {
+    const el = textareaRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = Math.min(el.scrollHeight, 120) + 'px'
+  }
+
   async function sendMessage(e: React.FormEvent) {
     e.preventDefault()
     const trimmed = input.trim()
     if (!trimmed || sending) return
-
     setSending(true)
     try {
       const { redactedBody, flagged, reasons } = scanAndRedact(trimmed)
-
       const flagReason = flagged ? reasons.join(', ') : null
 
       const { data: inserted, error } = await supabase
@@ -106,41 +106,29 @@ export function Chat({
           is_redacted: flagged,
           flag_reason: flagReason,
         })
-        .select(
-          'id, contract_id, sender_id, body, is_flagged, is_redacted, flag_reason, sent_at',
-        )
+        .select('id, contract_id, sender_id, body, is_flagged, is_redacted, flag_reason, sent_at')
         .single<Message>()
 
       if (error || !inserted) {
-        console.error(error)
         toast.error(error?.message ?? 'Could not send message.')
         return
       }
 
-      // Optimistic local append (Realtime will dedupe by id)
-      setMessages((prev) =>
-        prev.some((m) => m.id === inserted.id) ? prev : [...prev, inserted],
-      )
-
+      setMessages(prev => prev.some(m => m.id === inserted.id) ? prev : [...prev, inserted])
       setInput('')
+      if (textareaRef.current) {
+        textareaRef.current.style.height = 'auto'
+      }
 
       if (flagged) {
-        // Strike count: read current → write +1. Best-effort; race conditions
-        // are acceptable for moderation. RLS must allow users to update their
-        // own row.
         const { data: me } = await supabase
           .from('users')
           .select('strike_count')
           .eq('id', currentUserId)
           .single<{ strike_count: number | null }>()
-
         if (me) {
-          await supabase
-            .from('users')
-            .update({ strike_count: (me.strike_count ?? 0) + 1 })
-            .eq('id', currentUserId)
+          await supabase.from('users').update({ strike_count: (me.strike_count ?? 0) + 1 }).eq('id', currentUserId)
         }
-
         setLastRedaction(describeReasons(reasons))
       } else {
         setLastRedaction(null)
@@ -150,97 +138,102 @@ export function Chat({
     }
   }
 
+  // Group messages by date
+  const grouped: { date: string; msgs: Message[] }[] = []
+  for (const m of messages) {
+    const d = formatDate(m.sent_at)
+    const last = grouped[grouped.length - 1]
+    if (last && last.date === d) {
+      last.msgs.push(m)
+    } else {
+      grouped.push({ date: d, msgs: [m] })
+    }
+  }
+
   return (
     <div className="flex flex-col flex-1 min-h-0">
+      {/* Redaction warning */}
       {lastRedaction && (
-        <div className="bg-destructive/10 border-b border-destructive/30 px-8 py-3 flex items-start justify-between gap-4">
-          <div className="text-sm">
-            <p className="font-medium text-destructive">
-              Your last message was redacted
-            </p>
-            <p className="text-muted-foreground">
-              We detected {lastRedaction} in your message. Sharing off-platform
-              contact info is against the rules — repeated attempts can lead to
-              account suspension.
-            </p>
+        <div className="bg-yellow-50 border-b border-yellow-200 px-6 py-3 flex items-start justify-between gap-4 flex-shrink-0">
+          <div className="flex items-start gap-2">
+            <AlertTriangle className="w-4 h-4 text-yellow-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-[13px] font-bold text-yellow-800">Your last message was redacted</p>
+              <p className="text-[12px] text-yellow-700 mt-0.5">
+                We detected {lastRedaction}. Sharing off-platform contact info is against the rules.
+              </p>
+            </div>
           </div>
           <button
             type="button"
             onClick={() => setLastRedaction(null)}
-            className="text-muted-foreground hover:text-foreground text-sm shrink-0"
-            aria-label="Dismiss"
+            className="text-yellow-600 hover:text-yellow-800 text-[13px] flex-shrink-0"
           >
             ✕
           </button>
         </div>
       )}
 
-      <div
-        ref={scrollRef}
-        className="flex-1 overflow-y-auto px-4 sm:px-8 py-6"
-      >
+      {/* Messages scroll area */}
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
         {messages.length === 0 ? (
-          <div className="h-full flex items-center justify-center text-center text-sm text-muted-foreground">
+          <div className="h-full flex items-center justify-center text-center py-16">
             <div>
-              <p className="font-medium text-foreground mb-1">
-                Say hi to {counterpartName}
-              </p>
-              <p>
-                All messages are scanned. Off-platform contact info will be
-                redacted automatically.
+              <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center mx-auto mb-3 shadow-sm">
+                <Send className="w-5 h-5 text-[#B0B2AF]" />
+              </div>
+              <p className="text-[15px] font-bold text-[#121511] mb-1">Start the conversation</p>
+              <p className="text-[13px] text-[#6A6C6A]">
+                Say hi to {counterpartName}. All messages are monitored for off-platform contact sharing.
               </p>
             </div>
           </div>
         ) : (
-          <div className="flex flex-col gap-2 max-w-2xl mx-auto">
-            {messages.map((m) => {
-              const mine = m.sender_id === currentUserId
-              return (
-                <div
-                  key={m.id}
-                  className={cn(
-                    'flex',
-                    mine ? 'justify-end' : 'justify-start',
-                  )}
-                >
-                  <div
-                    className={cn(
-                      'max-w-[80%] rounded-2xl px-3 py-2 text-sm shadow-sm',
-                      mine
-                        ? 'bg-primary text-primary-foreground rounded-br-sm'
-                        : 'bg-muted text-foreground rounded-bl-sm',
-                    )}
-                  >
-                    <p className="whitespace-pre-wrap break-words">{m.body}</p>
-                    <div
-                      className={cn(
-                        'flex items-center gap-1.5 mt-0.5 text-[10px]',
-                        mine ? 'opacity-80' : 'text-muted-foreground',
-                      )}
-                    >
-                      <span>{formatTime(m.sent_at)}</span>
-                      {m.is_redacted && (
-                        <span className="uppercase tracking-wide">
-                          · redacted
-                        </span>
-                      )}
-                    </div>
-                  </div>
+          <>
+            {grouped.map(group => (
+              <div key={group.date}>
+                {/* Date separator */}
+                <div className="flex items-center gap-3 my-4">
+                  <div className="flex-1 h-px bg-[#E8E8E8]" />
+                  <span className="text-[11px] font-semibold text-[#B0B2AF] px-2">{group.date}</span>
+                  <div className="flex-1 h-px bg-[#E8E8E8]" />
                 </div>
-              )
-            })}
-          </div>
+
+                <div className="flex flex-col gap-1.5">
+                  {group.msgs.map((m) => {
+                    const mine = m.sender_id === currentUserId
+                    return (
+                      <div key={m.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
+                        <div
+                          className={`max-w-[72%] rounded-[18px] px-4 py-2.5 ${
+                            mine
+                              ? 'bg-[#163300] text-white rounded-br-[4px]'
+                              : 'bg-white text-[#121511] rounded-bl-[4px] shadow-sm'
+                          }`}
+                        >
+                          <p className="text-[14px] leading-relaxed whitespace-pre-wrap break-words">{m.body}</p>
+                          <div className={`flex items-center gap-1 mt-1 text-[10px] ${mine ? 'text-[#9FE870]/70 justify-end' : 'text-[#B0B2AF]'}`}>
+                            <span>{formatTime(m.sent_at)}</span>
+                            {m.is_redacted && <span className="uppercase tracking-wide">· redacted</span>}
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            ))}
+          </>
         )}
       </div>
 
-      <form
-        onSubmit={sendMessage}
-        className="border-t bg-background px-4 sm:px-8 py-3"
-      >
-        <div className="max-w-2xl mx-auto flex items-end gap-2">
-          <Textarea
+      {/* Input bar */}
+      <div className="bg-white border-t border-[#E8E8E8] px-6 py-4 flex-shrink-0">
+        <form onSubmit={sendMessage} className="flex items-end gap-3 max-w-[720px] mx-auto">
+          <textarea
+            ref={textareaRef}
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={(e) => { setInput(e.target.value); autoResize() }}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault()
@@ -249,14 +242,19 @@ export function Chat({
             }}
             placeholder={`Message ${counterpartName}…`}
             rows={1}
-            className="resize-none min-h-9"
             disabled={sending}
+            className="flex-1 resize-none bg-[#EDEFEB] rounded-[14px] px-4 py-3 text-[14px] text-[#121511] placeholder-[#B0B2AF] outline-none focus:ring-2 focus:ring-[#163300]/20 transition-all overflow-hidden"
+            style={{ minHeight: '44px', maxHeight: '120px' }}
           />
-          <Button type="submit" disabled={!input.trim() || sending}>
-            {sending ? 'Sending…' : 'Send'}
-          </Button>
-        </div>
-      </form>
+          <button
+            type="submit"
+            disabled={!input.trim() || sending}
+            className="w-11 h-11 rounded-full bg-[#163300] text-white flex items-center justify-center flex-shrink-0 hover:bg-[#1f4d00] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <Send className="w-4 h-4" />
+          </button>
+        </form>
+      </div>
     </div>
   )
 }

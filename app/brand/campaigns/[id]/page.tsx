@@ -182,6 +182,11 @@ export default async function BrandCampaignDetailPage({
               initialApplications={applications ?? []}
               campaignId={campaign.id}
               brandId={brand.id}
+              campaignTitle={campaign.title}
+              campaignDescription={campaign.description}
+              campaignDeadline={campaign.deadline}
+              campaignFormat={campaign.required_format?.[0] ?? null}
+              campaignPlatform={campaign.target_platforms?.[0] ?? null}
             />
           )}
         </div>

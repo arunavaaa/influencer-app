@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { Calculator, IndianRupee } from 'lucide-react'
 
-const PLATFORMS = ['Instagram', 'YouTube', 'Moj', 'ShareChat']
+const PLATFORMS = ['Instagram']
 const NICHES = ['Fashion', 'Food', 'Tech', 'Finance', 'Fitness', 'Travel', 'Beauty', 'Gaming', 'Parenting', 'Education', 'Lifestyle', 'Comedy']
 const FOLLOWER_RANGES = [
   { label: '1K – 10K', min: 1000, max: 10000, multiplier: 0.5 },
@@ -18,9 +18,6 @@ const FOLLOWER_RANGES = [
 
 const BASE_PRICES: Record<string, number> = {
   instagram: 5000,
-  youtube: 8000,
-  moj: 2000,
-  sharechat: 1500,
 }
 
 const NICHE_MULTIPLIERS: Record<string, number> = {

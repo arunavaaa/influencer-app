@@ -187,9 +187,6 @@ export default function TrackPage() {
                   className="w-full text-[14px] px-4 py-2.5 rounded-[12px] border border-[#E8E8E8] focus:outline-none focus:border-[#163300] bg-white cursor-pointer"
                 >
                   <option value="instagram">Instagram</option>
-                  <option value="youtube">YouTube</option>
-                  <option value="moj">Moj</option>
-                  <option value="sharechat">ShareChat</option>
                 </select>
               </div>
               {[

@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useParams, useRouter } from 'next/navigation'
-import { Heart, Share2, MapPin, Star } from 'lucide-react'
+import { Heart, Share2, MapPin, Star, Users, TrendingUp } from 'lucide-react'
+import { toast } from 'sonner'
 
 type Profile = {
   id: string
@@ -13,6 +14,11 @@ type Profile = {
   niche: string[]
   language: string[]
   reputation_score: number
+}
+
+type SocialAccount = {
+  follower_count: number | null
+  engagement_rate: number | null
 }
 
 type Package = {
@@ -51,6 +57,13 @@ const FORMAT_LABEL: Record<string, string> = {
   youtube_short: 'YouTube Short',
 }
 
+function fmtFollowers(n: number | null) {
+  if (!n) return '—'
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`
+  return `${n}`
+}
+
 function StarBar({ value, label }: { value: number; label: string }) {
   return (
     <div className="flex items-center gap-3">
@@ -73,6 +86,7 @@ export default function InfluencerProfilePage() {
   const { id } = useParams()
   const router = useRouter()
   const [profile, setProfile] = useState<Profile | null>(null)
+  const [social, setSocial] = useState<SocialAccount | null>(null)
   const [packages, setPackages] = useState<Package[]>([])
   const [reviews, setReviews] = useState<Review[]>([])
   const [similarCreators, setSimilarCreators] = useState<Profile[]>([])
@@ -94,7 +108,7 @@ export default function InfluencerProfilePage() {
     if (profileData) {
       setProfile(profileData)
 
-      const [{ data: pkgs }, { data: revs }, { data: similar }] = await Promise.all([
+      const [{ data: pkgs }, { data: revs }, { data: similar }, { data: socialData }] = await Promise.all([
         supabase
           .from('content_packages')
           .select('*')
@@ -112,15 +126,38 @@ export default function InfluencerProfilePage() {
           .eq('is_profile_live', true)
           .neq('id', profileData.id)
           .limit(4),
+        supabase
+          .from('social_accounts')
+          .select('follower_count, engagement_rate')
+          .eq('influencer_id', profileData.id)
+          .eq('platform', 'instagram')
+          .maybeSingle(),
       ])
 
       setPackages(pkgs || [])
       setReviews(revs || [])
       setSimilarCreators(similar || [])
+      setSocial(socialData)
       if (pkgs && pkgs.length > 0) setSelectedPackage(pkgs[0])
     }
 
     setLoading(false)
+  }
+
+  function handleHire() {
+    router.push(`/brand/creators/${id as string}`)
+  }
+
+  async function handleShare() {
+    const url = window.location.href
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: profile?.display_name, url })
+      } catch { /* user cancelled */ }
+    } else {
+      navigator.clipboard.writeText(url)
+      toast.success('Profile link copied!')
+    }
   }
 
   if (loading) {
@@ -167,6 +204,10 @@ export default function InfluencerProfilePage() {
       ? reviews.reduce((s, r) => s + (r.rating_satisfaction || 0), 0) / reviews.length
       : 0
 
+  const avgViews = social?.follower_count
+    ? Math.round(social.follower_count * ((social.engagement_rate || 3) / 100) * 4)
+    : null
+
   return (
     <div className="min-h-screen bg-[#EDEFEB]">
       {/* ── HERO ── */}
@@ -211,7 +252,10 @@ export default function InfluencerProfilePage() {
                       className={`w-5 h-5 ${saved ? 'fill-red-400 stroke-red-400' : 'stroke-white'}`}
                     />
                   </button>
-                  <button className="p-3 bg-white/10 rounded-full hover:bg-white/20 transition-colors">
+                  <button
+                    onClick={handleShare}
+                    className="p-3 bg-white/10 rounded-full hover:bg-white/20 transition-colors"
+                  >
                     <Share2 className="w-5 h-5 stroke-white" />
                   </button>
                 </div>
@@ -228,10 +272,10 @@ export default function InfluencerProfilePage() {
           {/* Stats row */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-10">
             {[
-              { label: 'Content Packages', value: packages.length },
-              { label: 'Reputation Score', value: profile.reputation_score || '—' },
-              { label: 'Languages', value: profile.language?.length || '—' },
-              { label: 'Niches', value: profile.niche?.length || '—' },
+              { label: 'Followers', value: fmtFollowers(social?.follower_count ?? null) },
+              { label: 'Engagement', value: social?.engagement_rate ? `${social.engagement_rate}%` : '—' },
+              { label: 'Avg Views', value: fmtFollowers(avgViews) },
+              { label: 'Content Packages', value: packages.length || '—' },
             ].map((s) => (
               <div key={s.label} className="bg-white/10 rounded-[16px] px-5 py-4 text-center">
                 <p className="text-[30px] font-black text-[#9FE870]">{s.value}</p>
@@ -289,7 +333,10 @@ export default function InfluencerProfilePage() {
                           {pkg.description}
                         </p>
                       )}
-                      <button className="w-full bg-[#9FE870] text-[#163300] font-bold text-[15px] py-3 rounded-full hover:bg-[#8fdc60] transition-colors">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleHire() }}
+                        className="w-full bg-[#9FE870] text-[#163300] font-bold text-[15px] py-3 rounded-full hover:bg-[#8fdc60] transition-colors"
+                      >
                         Buy Package
                       </button>
                     </div>
@@ -408,10 +455,16 @@ export default function InfluencerProfilePage() {
                       </div>
                     )}
 
-                    <button className="w-full bg-[#9FE870] text-[#163300] font-black text-[16px] py-4 rounded-full hover:bg-[#8fdc60] transition-colors mb-3">
-                      Add to Cart
+                    <button
+                      onClick={handleHire}
+                      className="w-full bg-[#9FE870] text-[#163300] font-black text-[16px] py-4 rounded-full hover:bg-[#8fdc60] transition-colors mb-3"
+                    >
+                      Hire this Creator
                     </button>
-                    <button className="w-full border-2 border-[#163300] text-[#163300] font-bold text-[15px] py-3 rounded-full hover:bg-[#163300] hover:text-[#9FE870] transition-colors">
+                    <button
+                      onClick={handleHire}
+                      className="w-full border-2 border-[#163300] text-[#163300] font-bold text-[15px] py-3 rounded-full hover:bg-[#163300] hover:text-[#9FE870] transition-colors"
+                    >
                       Negotiate a Package
                     </button>
                     <p className="mt-4 text-[12px] text-center text-[#6A6C6A]">
@@ -427,26 +480,34 @@ export default function InfluencerProfilePage() {
                 )}
               </div>
 
-              {/* Analytics placeholder */}
+              {/* Analytics */}
               <div className="bg-white rounded-[24px] p-6 mt-4">
                 <h3 className="text-[18px] font-bold text-[#121511] mb-4">Analytics</h3>
                 <div className="space-y-3">
                   <div className="flex justify-between text-[14px]">
-                    <span className="text-[#6A6C6A]">Avg. Engagement</span>
-                    <span className="font-bold text-[#121511]">—</span>
+                    <span className="flex items-center gap-1.5 text-[#6A6C6A]">
+                      <Users className="w-4 h-4" /> Followers
+                    </span>
+                    <span className="font-bold text-[#121511]">{fmtFollowers(social?.follower_count ?? null)}</span>
                   </div>
                   <div className="flex justify-between text-[14px]">
-                    <span className="text-[#6A6C6A]">Audience</span>
-                    <span className="font-bold text-[#121511]">—</span>
+                    <span className="flex items-center gap-1.5 text-[#6A6C6A]">
+                      <TrendingUp className="w-4 h-4" /> Engagement
+                    </span>
+                    <span className="font-bold text-[#121511]">
+                      {social?.engagement_rate ? `${social.engagement_rate}%` : '—'}
+                    </span>
                   </div>
                   <div className="flex justify-between text-[14px]">
                     <span className="text-[#6A6C6A]">Avg. Views</span>
-                    <span className="font-bold text-[#121511]">—</span>
+                    <span className="font-bold text-[#121511]">{fmtFollowers(avgViews)}</span>
                   </div>
                 </div>
-                <p className="text-[12px] text-[#6A6C6A] mt-4 text-center">
-                  Analytics available after first campaign
-                </p>
+                {!social?.follower_count && (
+                  <p className="text-[12px] text-[#6A6C6A] mt-4 text-center">
+                    Analytics available after Instagram is connected
+                  </p>
+                )}
               </div>
             </div>
           </div>

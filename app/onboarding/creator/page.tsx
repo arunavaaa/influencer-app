@@ -52,9 +52,9 @@ const NICHES = [
 ]
 
 const DEFAULT_PACKAGES: OnboardingData['packages'] = [
-  { format: 'Reel', price: null, deliveryDays: 5, revisions: 2, description: '', enabled: true },
-  { format: 'Post', price: null, deliveryDays: 3, revisions: 2, description: '', enabled: true },
-  { format: 'Story', price: null, deliveryDays: 2, revisions: 1, description: '', enabled: true },
+  { format: 'reel', price: null, deliveryDays: 5, revisions: 2, description: '', enabled: true },
+  { format: 'post', price: null, deliveryDays: 3, revisions: 2, description: '', enabled: true },
+  { format: 'story', price: null, deliveryDays: 2, revisions: 1, description: '', enabled: true },
 ]
 
 const EMPTY_DATA: OnboardingData = {
@@ -71,6 +71,10 @@ const EMPTY_DATA: OnboardingData = {
   followerCount: null,
   engagementRate: null,
   contentUrls: [],
+  upiId: '',
+  bankAccountName: '',
+  bankAccountNo: '',
+  bankIfsc: '',
   packages: DEFAULT_PACKAGES,
 }
 
@@ -101,18 +105,47 @@ export default function CreatorOnboarding() {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [submitting, setSubmitting] = useState(false)
 
-  /* Restore saved progress */
+  /* Restore progress + check auth/role on mount */
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY)
-      if (saved) {
-        const parsed = JSON.parse(saved)
-        setData({ ...EMPTY_DATA, ...parsed })
-        if (parsed.__step && typeof parsed.__step === 'number') {
-          setStep(parsed.__step)
-        }
+    async function init() {
+      // Handle Google OAuth role conflict redirect
+      const urlParams = new URLSearchParams(window.location.search)
+      if (urlParams.get('error') === 'brand_account') {
+        window.history.replaceState({}, '', '/onboarding/creator')
+        await supabase.auth.signOut()
+        toast.error("That Google account is already registered as a brand on Crayon. Please choose a different account to sign up as a creator.")
+        setStep(1)
+        return
       }
-    } catch { /* ignore */ }
+
+      let savedStep = 1
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY)
+        if (saved) {
+          const parsed = JSON.parse(saved)
+          setData({ ...EMPTY_DATA, ...parsed })
+          if (parsed.__step && typeof parsed.__step === 'number') savedStep = parsed.__step
+        }
+      } catch { /* ignore */ }
+
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data: userData } = await supabase.from('users').select('role').eq('id', user.id).single()
+        if (userData?.role === 'brand') {
+          toast.error("This account is already registered as a brand. Please sign in with a different account to join as a creator.")
+          router.replace('/brand/home')
+          return
+        }
+        if (userData?.role === 'influencer') {
+          router.replace('/influencer/home')
+          return
+        }
+        // New Google OAuth user — skip account creation step
+        if (savedStep === 1) savedStep = 2
+      }
+      setStep(savedStep)
+    }
+    init()
   }, [])
 
   /* Persist to localStorage on every change */
@@ -153,6 +186,13 @@ export default function CreatorOnboarding() {
         return
       }
 
+      const { data: existingUser } = await supabase.from('users').select('role').eq('id', user.id).single()
+      if (existingUser?.role === 'brand') {
+        toast.error("This account is already registered as a brand. Please sign in with a different account to join as a creator.")
+        setSubmitting(false)
+        return
+      }
+
       // 1. Upsert users row
       await supabase.from('users').upsert({ id: user.id, email: user.email, role: 'influencer' })
 
@@ -162,12 +202,20 @@ export default function CreatorOnboarding() {
         .upsert({
           user_id: user.id,
           display_name: data.displayName,
+          profile_title: data.profileTitle || null,
           bio: data.bio,
           niche: data.niches,
           city: data.city,
           language: data.languages,
           is_profile_live: true,
           profile_photo_url: data.profilePhotoUrl,
+          portfolio_urls: data.contentUrls,
+          ...(data.upiId ? { upi_id: data.upiId } : {}),
+          ...(data.bankAccountNo ? {
+            bank_account_name: data.bankAccountName || null,
+            bank_account_no: data.bankAccountNo,
+            bank_ifsc: data.bankIfsc || null,
+          } : {}),
         })
         .select('id')
         .single()
@@ -213,7 +261,7 @@ export default function CreatorOnboarding() {
     }
   }
 
-  const totalSteps = 7
+  const totalSteps = 8
   const progress = (step / totalSteps) * 100
 
   return (
@@ -221,7 +269,16 @@ export default function CreatorOnboarding() {
       {/* Top bar */}
       <div className="fixed top-0 inset-x-0 z-50 bg-white border-b border-[#EDEFEB] h-16 flex items-center px-5 md:px-10">
         <span className="text-[18px] font-black text-[#163300]">{APP_NAME}</span>
-        <div className="ml-auto flex items-center gap-4">
+        <div className="ml-auto flex items-center gap-5">
+          <button
+            onClick={async () => {
+              await supabase.auth.signOut()
+              router.push('/onboarding/brand')
+            }}
+            className="text-[13px] text-[#6A6C6A] hover:text-[#163300] transition-colors"
+          >
+            Join as Brand
+          </button>
           <button
             onClick={() => router.push('/login')}
             className="text-[13px] text-[#6A6C6A] hover:text-[#163300] transition-colors"
@@ -240,9 +297,9 @@ export default function CreatorOnboarding() {
       </div>
 
       {/* Main layout */}
-      <div className="pt-[72px] min-h-screen flex flex-col lg:flex-row">
+      <div className="flex flex-col lg:flex-row min-h-screen">
         {/* ── Left column ── */}
-        <div className="flex-1 lg:w-[55%] px-5 md:px-10 lg:px-[60px] py-10 flex flex-col max-w-[700px] mx-auto lg:mx-0 w-full">
+        <div className="w-full lg:w-[52vw] pt-[72px] pb-10 px-5 md:px-10 lg:px-[60px] flex flex-col max-w-[680px] mx-auto lg:mx-0">
           {/* Step label */}
           <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#163300]/50 mb-2">
             Step {step} of {totalSteps}
@@ -258,38 +315,44 @@ export default function CreatorOnboarding() {
               />
             )}
             {step === 2 && (
-              <Step2
+              <StepUsername
                 data={data} patch={patch}
                 onNext={() => setStep(3)} onBack={goBack}
               />
             )}
             {step === 3 && (
-              <Step3
-                data={data} patch={patch} errors={errors}
-                clearErrors={clearErrors}
+              <Step2
+                data={data} patch={patch}
                 onNext={() => setStep(4)} onBack={goBack}
               />
             )}
             {step === 4 && (
-              <Step4
+              <Step3
                 data={data} patch={patch} errors={errors}
+                clearErrors={clearErrors}
                 onNext={() => setStep(5)} onBack={goBack}
               />
             )}
             {step === 5 && (
-              <Step5
-                data={data} patch={patch}
+              <Step4
+                data={data} patch={patch} errors={errors}
                 onNext={() => setStep(6)} onBack={goBack}
               />
             )}
             {step === 6 && (
-              <Step6
-                data={data} patch={patch} errors={errors}
-                clearErrors={clearErrors}
+              <Step5
+                data={data} patch={patch}
                 onNext={() => setStep(7)} onBack={goBack}
               />
             )}
             {step === 7 && (
+              <Step6
+                data={data} patch={patch} errors={errors}
+                clearErrors={clearErrors}
+                onNext={() => setStep(8)} onBack={goBack}
+              />
+            )}
+            {step === 8 && (
               <Step7
                 data={data}
                 submitting={submitting}
@@ -323,9 +386,9 @@ export default function CreatorOnboarding() {
           </div>
         </div>
 
-        {/* ── Right column: preview ── */}
-        <div className="hidden lg:block lg:w-[45%] bg-[#EDEFEB] px-8 py-10">
-          <div className="sticky top-[80px]">
+        {/* ── Right column: preview — fixed to right edge, full viewport height ── */}
+        <div className="hidden lg:block fixed top-0 right-0 bottom-0 w-[48vw] bg-[#EDEFEB] overflow-y-auto">
+          <div className="pt-[96px] px-8 pb-8">
             <CreatorProfilePreview data={data} isLive={step === 7} />
           </div>
         </div>
@@ -335,7 +398,7 @@ export default function CreatorOnboarding() {
 }
 
 /* ════════════════════════════════════════════════
-   STEP 1 — Claim Your Profile
+   STEP 1 — Account Creation
 ════════════════════════════════════════════════ */
 function Step1({
   data, patch, errors, clearErrors, setError, onNext,
@@ -348,36 +411,11 @@ function Step1({
   onNext: () => void
 }) {
   const supabase = createClient()
-  const [usernameStatus, setUsernameStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle')
   const [showPassword, setShowPassword] = useState(false)
   const [agreed, setAgreed] = useState(false)
   const [password, setPassword] = useState('')
   const [email, setEmail] = useState('')
   const [fullName, setFullName] = useState(data.displayName)
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  async function checkUsername(val: string) {
-    if (val.length < 3) { setUsernameStatus('idle'); return }
-    setUsernameStatus('checking')
-    const { data: existing } = await supabase
-      .from('influencer_profiles')
-      .select('id')
-      .eq('username', val)
-      .maybeSingle()
-    setUsernameStatus(existing ? 'taken' : 'available')
-  }
-
-  function onUsernameChange(val: string) {
-    const cleaned = val.replace(/[^a-zA-Z0-9_]/g, '').slice(0, 30)
-    patch({ username: cleaned })
-    clearErrors('username')
-    if (debounceRef.current) clearTimeout(debounceRef.current)
-    if (cleaned.length >= 3) {
-      debounceRef.current = setTimeout(() => checkUsername(cleaned), 500)
-    } else {
-      setUsernameStatus('idle')
-    }
-  }
 
   async function handleGoogle() {
     const { error } = await supabase.auth.signInWithOAuth({
@@ -389,13 +427,11 @@ function Step1({
 
   async function handleEmailSignup() {
     const errs: Record<string, string> = {}
-    if (!data.username || data.username.length < 3) errs.username = 'Username must be at least 3 characters'
-    if (usernameStatus === 'taken') errs.username = 'This username is taken'
     if (!fullName.trim()) errs.fullName = 'Name is required'
     if (!email.includes('@')) errs.email = 'Enter a valid email'
     if (password.length < 6) errs.password = 'Password must be at least 6 characters'
     if (!agreed) errs.terms = 'You must agree to the terms'
-    if (Object.keys(errs).length) { errs && Object.entries(errs).forEach(([k, v]) => setError(k, v)); return }
+    if (Object.keys(errs).length) { Object.entries(errs).forEach(([k, v]) => setError(k, v)); return }
 
     patch({ displayName: fullName })
     const { error } = await supabase.auth.signUp({ email, password })
@@ -403,52 +439,14 @@ function Step1({
     onNext()
   }
 
-  function validateAndNext() {
-    const errs: Record<string, string> = {}
-    if (!data.username || data.username.length < 3) errs.username = 'Username must be at least 3 characters'
-    if (usernameStatus === 'taken') errs.username = 'This username is taken'
-    if (Object.keys(errs).length) { Object.entries(errs).forEach(([k, v]) => setError(k, v)); return }
-    onNext()
-  }
-
   return (
     <div>
       <h1 className="text-[36px] md:text-[44px] font-black text-[#163300] leading-tight mb-2">
-        Claim your creator profile
+        Set Up Your Creator Profile
       </h1>
       <p className="text-[16px] text-[#6A6C6A] mb-8">
         Your profile is your storefront. Brands will find and hire you here.
       </p>
-
-      {/* Username */}
-      <div className="mb-5">
-        <label className={LabelStyle}>Your profile URL</label>
-        <div className="flex items-center rounded-2xl border border-[#163300]/20 overflow-hidden focus-within:border-[#163300] transition-colors bg-white">
-          <span className="px-4 py-3 text-[15px] text-[#6A6C6A] bg-[#EDEFEB] border-r border-[#163300]/20 whitespace-nowrap flex-shrink-0">
-            crayon.in/
-          </span>
-          <input
-            type="text"
-            value={data.username}
-            onChange={e => onUsernameChange(e.target.value)}
-            placeholder="your_username"
-            className="flex-1 px-4 py-3 text-[15px] text-[#121511] placeholder-[#B0B2AF] focus:outline-none bg-white"
-          />
-          <span className="px-3 flex-shrink-0">
-            {usernameStatus === 'checking' && <Loader2 className="w-4 h-4 animate-spin text-[#6A6C6A]" />}
-            {usernameStatus === 'available' && <Check className="w-4 h-4 text-green-500" />}
-            {usernameStatus === 'taken' && <X className="w-4 h-4 text-red-500" />}
-          </span>
-        </div>
-        {usernameStatus === 'available' && (
-          <p className="text-[12px] text-green-600 mt-1">Username is available!</p>
-        )}
-        {usernameStatus === 'taken' && (
-          <p className="text-[12px] text-red-500 mt-1">This username is taken. Try another.</p>
-        )}
-        {errors.username && <p className={ErrorStyle}>{errors.username}</p>}
-        <p className="text-[12px] text-[#6A6C6A] mt-1">Letters, numbers, underscores only. Min 3, max 30 characters.</p>
-      </div>
 
       {/* Google OAuth */}
       <button
@@ -546,6 +544,119 @@ function Step1({
         Already have an account?{' '}
         <a href="/login" className="text-[#163300] font-semibold hover:underline">Sign in</a>
       </p>
+    </div>
+  )
+}
+
+/* ════════════════════════════════════════════════
+   STEP 2 — Choose Profile URL
+════════════════════════════════════════════════ */
+function StepUsername({
+  data, patch, onNext, onBack,
+}: {
+  data: OnboardingData
+  patch: (u: Partial<OnboardingData>) => void
+  onNext: () => void
+  onBack: () => void
+}) {
+  const supabase = createClient()
+  const [usernameStatus, setUsernameStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle')
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  async function checkUsername(val: string) {
+    if (val.length < 3) { setUsernameStatus('idle'); return }
+    setUsernameStatus('checking')
+    const { data: existing } = await supabase
+      .from('influencer_profiles')
+      .select('id')
+      .eq('username', val)
+      .maybeSingle()
+    setUsernameStatus(existing ? 'taken' : 'available')
+  }
+
+  function onUsernameChange(val: string) {
+    const cleaned = val.replace(/[^a-zA-Z0-9_]/g, '').slice(0, 30)
+    patch({ username: cleaned })
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    if (cleaned.length >= 3) {
+      debounceRef.current = setTimeout(() => checkUsername(cleaned), 500)
+    } else {
+      setUsernameStatus('idle')
+    }
+  }
+
+  function validate() {
+    if (!data.username || data.username.length < 3) { toast.error('Username must be at least 3 characters'); return }
+    if (usernameStatus === 'taken') { toast.error('This username is taken. Try another.'); return }
+    if (usernameStatus === 'checking') { toast.error('Please wait while we check availability'); return }
+    onNext()
+  }
+
+  return (
+    <div>
+      <h1 className="text-[36px] md:text-[44px] font-black text-[#163300] leading-tight mb-2">
+        Choose your profile URL
+      </h1>
+      <p className="text-[16px] text-[#6A6C6A] mb-8">
+        This is your unique link on Crayon. Pick something memorable — you can change it later.
+      </p>
+
+      <div className="mb-5">
+        <label className={LabelStyle}>Your profile URL</label>
+        <div className="flex items-center rounded-2xl border border-[#163300]/20 overflow-hidden focus-within:border-[#163300] transition-colors bg-white">
+          <span className="px-4 py-3 text-[15px] text-[#6A6C6A] bg-[#EDEFEB] border-r border-[#163300]/20 whitespace-nowrap flex-shrink-0">
+            crayon.in/
+          </span>
+          <input
+            type="text"
+            value={data.username}
+            onChange={e => onUsernameChange(e.target.value)}
+            placeholder="your_username"
+            className="flex-1 px-4 py-3 text-[15px] text-[#121511] placeholder-[#B0B2AF] focus:outline-none bg-white"
+          />
+          <span className="px-3 flex-shrink-0">
+            {usernameStatus === 'checking' && <Loader2 className="w-4 h-4 animate-spin text-[#6A6C6A]" />}
+            {usernameStatus === 'available' && <Check className="w-4 h-4 text-green-500" />}
+            {usernameStatus === 'taken' && <X className="w-4 h-4 text-red-500" />}
+          </span>
+        </div>
+        {usernameStatus === 'available' && (
+          <p className="text-[12px] text-green-600 mt-1">Username is available!</p>
+        )}
+        {usernameStatus === 'taken' && (
+          <p className="text-[12px] text-red-500 mt-1">This username is taken. Try another.</p>
+        )}
+        <p className="text-[12px] text-[#6A6C6A] mt-1">Letters, numbers, underscores only. Min 3, max 30 characters.</p>
+      </div>
+
+      {data.username && usernameStatus === 'available' && (
+        <div className="flex items-center gap-2 bg-[#9FE870]/20 border border-[#9FE870] rounded-2xl px-4 py-3 mb-8">
+          <Check className="w-4 h-4 text-[#163300] flex-shrink-0" />
+          <p className="text-[13px] font-semibold text-[#163300]">
+            Your profile will be at <span className="font-black">crayon.in/{data.username}</span>
+          </p>
+        </div>
+      )}
+
+      <div className="flex gap-3 mt-8">
+        <button
+          onClick={onBack}
+          className="flex items-center gap-2 px-6 py-3.5 rounded-full border-2 border-[#163300]/20 text-[15px] font-semibold text-[#163300] hover:border-[#163300] transition-colors"
+        >
+          <ChevronLeft className="w-4 h-4" /> Back
+        </button>
+        <button
+          onClick={validate}
+          disabled={usernameStatus === 'checking' || usernameStatus === 'taken' || !data.username}
+          className={`flex-1 py-3.5 rounded-full font-bold text-[16px] transition-colors ${
+            usernameStatus === 'available'
+              ? 'bg-[#9FE870] text-[#163300] hover:bg-[#8fdc60]'
+              : 'bg-[#EDEFEB] text-[#6A6C6A] cursor-not-allowed'
+          }`}
+        >
+          Continue
+        </button>
+      </div>
     </div>
   )
 }
@@ -891,22 +1002,32 @@ function Step5({
   onNext: () => void
   onBack: () => void
 }) {
-  const supabase = createClient()
   const photoRef = useRef<HTMLInputElement>(null)
   const contentRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
 
+  async function uploadViaApi(file: File, folder: string): Promise<string | null> {
+    const form = new FormData()
+    form.append('file', file)
+    form.append('folder', folder)
+    const res = await fetch('/api/upload', { method: 'POST', body: form })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      console.error('Upload error:', err)
+      return null
+    }
+    const { url } = await res.json()
+    return url
+  }
+
   async function handlePhotoUpload(file: File) {
     setUploading(true)
-    const ext = file.name.split('.').pop()
-    const path = `photos/${Date.now()}.${ext}`
-    const { error } = await supabase.storage.from('creator-portfolio').upload(path, file)
-    if (!error) {
-      const { data: urlData } = supabase.storage.from('creator-portfolio').getPublicUrl(path)
-      patch({ profilePhotoUrl: urlData.publicUrl })
+    const url = await uploadViaApi(file, 'photos')
+    if (url) {
+      patch({ profilePhotoUrl: url })
       toast.success('Profile photo uploaded!')
     } else {
-      toast.error('Upload failed — check storage bucket permissions')
+      toast.error('Upload failed — please try again')
     }
     setUploading(false)
   }
@@ -915,17 +1036,12 @@ function Step5({
     setUploading(true)
     const newUrls: string[] = []
     for (let i = 0; i < Math.min(files.length, 12 - data.contentUrls.length); i++) {
-      const file = files[i]
-      const ext = file.name.split('.').pop()
-      const path = `content/${Date.now()}-${i}.${ext}`
-      const { error } = await supabase.storage.from('creator-portfolio').upload(path, file)
-      if (!error) {
-        const { data: urlData } = supabase.storage.from('creator-portfolio').getPublicUrl(path)
-        newUrls.push(urlData.publicUrl)
-      }
+      const url = await uploadViaApi(files[i], 'content')
+      if (url) newUrls.push(url)
     }
     patch({ contentUrls: [...data.contentUrls, ...newUrls] })
     if (newUrls.length) toast.success(`${newUrls.length} file${newUrls.length > 1 ? 's' : ''} uploaded!`)
+    else toast.error('Upload failed — please try again')
     setUploading(false)
   }
 
@@ -1016,7 +1132,7 @@ function Step5({
         <div className="grid grid-cols-3 gap-3 mb-5">
           {data.contentUrls.map((url, i) => (
             <div key={i} className="relative group aspect-square rounded-2xl overflow-hidden bg-[#EDEFEB]">
-              {url.endsWith('.mp4') ? (
+              {/\.(mp4|mov|webm)(\?|$)/i.test(url) ? (
                 <video src={url} className="w-full h-full object-cover" muted />
               ) : (
                 <img src={url} alt="" className="w-full h-full object-cover" />
@@ -1078,8 +1194,6 @@ function Step6({
   onNext: () => void
   onBack: () => void
 }) {
-  const [upiId, setUpiId] = useState('')
-
   const suggestedPrice = getSuggestedPrice(data.followerCount)
 
   function updatePackage(i: number, updates: Partial<OnboardingData['packages'][number]>) {
@@ -1132,8 +1246,8 @@ function Step6({
             <label className={LabelStyle}>UPI ID</label>
             <input
               type="text"
-              value={upiId}
-              onChange={e => setUpiId(e.target.value)}
+              value={data.upiId}
+              onChange={e => patch({ upiId: e.target.value })}
               placeholder="yourname@upi"
               className={InputStyle}
             />
@@ -1145,14 +1259,38 @@ function Step6({
             <div className="flex-1 h-px bg-[#EDEFEB]" />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-4">
             <div>
-              <label className={LabelStyle}>Account Number</label>
-              <input type="text" placeholder="XXXXXXXXXXXXXX" className={InputStyle} />
+              <label className={LabelStyle}>Account Holder Name</label>
+              <input
+                type="text"
+                value={data.bankAccountName}
+                onChange={e => patch({ bankAccountName: e.target.value })}
+                placeholder="Full name as on bank account"
+                className={InputStyle}
+              />
             </div>
-            <div>
-              <label className={LabelStyle}>IFSC Code</label>
-              <input type="text" placeholder="SBIN0000123" className={InputStyle} />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className={LabelStyle}>Account Number</label>
+                <input
+                  type="text"
+                  value={data.bankAccountNo}
+                  onChange={e => patch({ bankAccountNo: e.target.value })}
+                  placeholder="XXXXXXXXXXXXXX"
+                  className={InputStyle}
+                />
+              </div>
+              <div>
+                <label className={LabelStyle}>IFSC Code</label>
+                <input
+                  type="text"
+                  value={data.bankIfsc}
+                  onChange={e => patch({ bankIfsc: e.target.value.toUpperCase() })}
+                  placeholder="SBIN0000123"
+                  className={InputStyle}
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -1191,7 +1329,7 @@ function PackageCard({
   suggestedPrice: string
   onChange: (u: Partial<OnboardingData['packages'][number]>) => void
 }) {
-  const FORMAT_ICONS: Record<string, string> = { Reel: '🎬', Post: '📸', Story: '⭕' }
+  const FORMAT_ICONS: Record<string, string> = { reel: '🎬', post: '📸', story: '⭕' }
 
   return (
     <div className={`rounded-3xl border-2 transition-all ${pkg.enabled ? 'border-[#163300]/20 bg-white' : 'border-[#EDEFEB] bg-[#EDEFEB]/30'}`}>
@@ -1200,7 +1338,7 @@ function PackageCard({
         <div className="flex items-center gap-3">
           <span className="text-[20px]">{FORMAT_ICONS[pkg.format]}</span>
           <div>
-            <p className="text-[15px] font-black text-[#121511]">Instagram {pkg.format}</p>
+            <p className="text-[15px] font-black text-[#121511]">Instagram {pkg.format.charAt(0).toUpperCase() + pkg.format.slice(1)}</p>
             <span className="inline-flex items-center gap-1 bg-pink-50 text-pink-600 text-[11px] font-semibold px-2 py-0.5 rounded-full">
               <IgIcon className="w-3 h-3" /> Instagram
             </span>
@@ -1390,13 +1528,12 @@ function Step7({
 
         {[
           { icon: '🔍', title: 'Browse open campaigns', desc: 'Brands looking for creators right now', href: '/influencer/campaigns' },
-          { icon: '✏️', title: 'Complete your profile', desc: 'Add more content to boost visibility', href: '/influencer/home' },
-          { icon: '📢', title: 'Share your profile', desc: 'Tell your audience you\'re open for collabs', action: copyLink },
+          { icon: '✏️', title: 'Edit your profile', desc: 'Add portfolio, packages, and pricing to get hired', href: '/influencer/profile/edit' },
         ].map((item, i) => (
           <a
             key={i}
             href={item.href}
-            onClick={item.action ? e => { e.preventDefault(); item.action!() } : undefined}
+            onClick={undefined}
             className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-[#EDEFEB] hover:border-[#163300]/20 hover:shadow-sm transition-all group cursor-pointer"
           >
             <span className="text-[22px] flex-shrink-0">{item.icon}</span>

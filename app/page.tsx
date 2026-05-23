@@ -5,7 +5,7 @@ import { HeroSearch } from '@/components/shared/HeroSearch'
 export const metadata = {
   title: "Crayon — India's Influencer Marketplace",
   description:
-    'Find and work with verified Indian creators on Instagram, YouTube, Moj & ShareChat.',
+    'Find and work with verified Indian creators on Instagram — India\'s creator marketplace.',
 }
 
 const GRADIENTS = [
@@ -75,7 +75,7 @@ function Hero() {
         </h1>
 
         <p className="text-[17px] md:text-[19px] text-white/55 leading-relaxed max-w-[500px] mx-auto mb-10">
-          Find and work with verified Indian creators across Instagram, YouTube, Moj and ShareChat.
+          Find and work with verified Indian Instagram creators. YouTube, Moj & more coming soon.
         </p>
 
         {/* Interactive search — client component */}
@@ -324,7 +324,7 @@ function WhyCrayon() {
             },
             {
               title: 'Made for India',
-              body: 'GST invoices, INR pricing, regional platforms, and content filters — designed for how Indian brands and creators work.',
+              body: 'GST invoices, INR pricing, Instagram-native search, and content filters — designed for how Indian brands and creators work.',
               metric: '₹0',
               metricLabel: 'To Start Browsing',
             },
@@ -458,7 +458,7 @@ function Footer() {
           <div>
             <p className="text-[22px] font-black text-[#163300] mb-2">Crayon</p>
             <p className="text-[14px] text-[#6A6C6A] leading-relaxed max-w-[280px]">
-              India&rsquo;s influencer marketplace connecting brands with verified creators across all major platforms.
+              India&rsquo;s influencer marketplace connecting brands with verified Instagram creators. More platforms coming soon.
             </p>
           </div>
 
@@ -482,7 +482,7 @@ function Footer() {
                 </Link>
               </li>
               <li>
-                <span className="text-[15px] text-[#B0B2AF] font-medium cursor-default">Blog</span>
+                <span className="text-[15px] text-[#B0B2AF] font-medium">Blog <span className="text-[12px]">(coming soon)</span></span>
               </li>
             </ul>
           </div>
@@ -513,8 +513,8 @@ function Footer() {
         <div className="border-t border-[#E8E8E8] pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-[14px] text-[#6A6C6A]">
           <span>© {new Date().getFullYear()} Crayon. All rights reserved.</span>
           <div className="flex gap-6">
-            <span className="text-[#B0B2AF] cursor-default">Privacy</span>
-            <span className="text-[#B0B2AF] cursor-default">Terms</span>
+            <Link href="/privacy" className="text-[#6A6C6A] hover:text-[#45A905] transition-colors">Privacy</Link>
+            <Link href="/terms" className="text-[#6A6C6A] hover:text-[#45A905] transition-colors">Terms</Link>
           </div>
         </div>
       </div>
