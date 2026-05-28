@@ -256,12 +256,12 @@ export function CampaignActions({ campaignId, creatorId, brandUserId, campaign, 
   return (
     <>
       <div className="flex gap-2">
-        {/* View is always accessible — even after applying */}
+        {/* View Details is always accessible — even after applying */}
         <button
           onClick={() => setView('detail')}
           className="flex-1 py-2.5 border-2 border-[#163300]/20 text-[#163300] text-[13px] font-semibold rounded-full hover:border-[#163300] transition-colors"
         >
-          View
+          View Details
         </button>
         {applied ? (
           <div className="flex-1 py-2.5 bg-[#9FE870]/20 text-[#163300] text-[13px] font-bold rounded-full text-center">

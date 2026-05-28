@@ -81,27 +81,6 @@ export default async function BrowseCampaigns({ searchParams }: { searchParams: 
                   <p className="text-[13px] text-[#4A4C4A] leading-relaxed mb-3 line-clamp-3">{c.goal}</p>
                 )}
 
-                {/* Tags — labeled by category */}
-                <div className="space-y-1.5 mb-3">
-                  {(c.platforms?.length ?? 0) > 0 && (
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-[9px] font-black uppercase tracking-[0.1em] text-[#B0B2AF] flex-shrink-0">Platform</span>
-                      {c.platforms?.map((p: string) => <span key={p} className="text-[11px] px-2 py-0.5 bg-[#EDEFEB] text-[#4A4C4A] rounded-full font-semibold">{p}</span>)}
-                    </div>
-                  )}
-                  {(c.deliverable_formats?.length ?? 0) > 0 && (
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-[9px] font-black uppercase tracking-[0.1em] text-[#B0B2AF] flex-shrink-0">Format</span>
-                      {c.deliverable_formats?.map((f: string) => <span key={f} className="text-[11px] px-2 py-0.5 bg-[#F5F0FF] text-purple-700 rounded-full font-semibold">{f}</span>)}
-                    </div>
-                  )}
-                  {(c.niches?.length ?? 0) > 0 && (
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-[9px] font-black uppercase tracking-[0.1em] text-[#B0B2AF] flex-shrink-0">Niche</span>
-                      {c.niches?.slice(0, 2).map((n: string) => <span key={n} className="text-[11px] px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full font-semibold">{n}</span>)}
-                    </div>
-                  )}
-                </div>
 
                 {/* Budget + deadlines */}
                 <div className="mb-4 space-y-0.5">
