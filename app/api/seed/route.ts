@@ -37,6 +37,10 @@ export async function POST() {
       user_metadata: { full_name: name },
     })
     if (error || !data.user) throw new Error(`createUser(${email}): ${error?.message}`)
+
+    // Explicitly set password again — ensures the email/password identity is properly linked
+    await db.auth.admin.updateUserById(data.user.id, { password: PASS })
+
     return data.user.id
   }
 
