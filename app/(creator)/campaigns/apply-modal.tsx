@@ -46,41 +46,50 @@ function CampaignDetailModal({ campaign, onApply, onClose }: {
           </button>
         </div>
 
-        {/* Scrollable body */}
-        <div className="overflow-y-auto flex-1 px-6 py-5 space-y-5">
+        {/* Scrollable body — quick info first, description last */}
+        <div className="overflow-y-auto flex-1 px-6 py-5 space-y-4">
 
-          {/* Goal / description */}
-          {campaign.goal && (
-            <div>
-              <p className="text-[11px] font-black uppercase tracking-widest text-[#9A9C9A] mb-1.5">
-                What the brand needs
-              </p>
-              <p className="text-[14px] text-[#4A4C4A] leading-relaxed whitespace-pre-wrap">{campaign.goal}</p>
-            </div>
-          )}
-
-          {/* Platform · Format · Niche tags */}
+          {/* Platform / Format / Niche — each with its own label */}
           {((campaign.platforms?.length ?? 0) > 0 ||
             (campaign.deliverable_formats?.length ?? 0) > 0 ||
             (campaign.niches?.length ?? 0) > 0) && (
-            <div className="pt-4 border-t border-[#F0F0F0]">
-              <div className="flex flex-wrap gap-1.5">
-                {campaign.platforms?.map(p => (
-                  <span key={p} className="text-[11px] px-2.5 py-1 bg-[#F0F7EC] text-[#163300] rounded-full font-bold border border-[#163300]/15">{p}</span>
-                ))}
-                {campaign.deliverable_formats?.map(f => (
-                  <span key={f} className="text-[11px] px-2.5 py-1 bg-[#F5F0FF] text-purple-700 rounded-full font-semibold">{f}</span>
-                ))}
-                {campaign.niches?.map(n => (
-                  <span key={n} className="text-[11px] px-2.5 py-1 bg-blue-50 text-blue-700 rounded-full font-semibold">{n}</span>
-                ))}
-              </div>
+            <div className="space-y-3">
+              {(campaign.platforms?.length ?? 0) > 0 && (
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.12em] text-[#9A9C9A] mb-1.5">Platform</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {campaign.platforms?.map(p => (
+                      <span key={p} className="text-[12px] px-3 py-1 bg-[#F0F7EC] text-[#163300] rounded-full font-bold border border-[#163300]/15">{p}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {(campaign.deliverable_formats?.length ?? 0) > 0 && (
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.12em] text-[#9A9C9A] mb-1.5">Deliverable Format</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {campaign.deliverable_formats?.map(f => (
+                      <span key={f} className="text-[12px] px-3 py-1 bg-[#F5F0FF] text-purple-700 rounded-full font-semibold">{f}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {(campaign.niches?.length ?? 0) > 0 && (
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.12em] text-[#9A9C9A] mb-1.5">Looking for Creators in</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {campaign.niches?.map(n => (
+                      <span key={n} className="text-[12px] px-3 py-1 bg-blue-50 text-blue-700 rounded-full font-semibold">{n}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
           {/* Budget + deadlines */}
           {(campaign.budget_inr || campaign.application_deadline || campaign.content_deadline) && (
-            <div className="flex flex-wrap gap-6 pt-4 border-t border-[#F0F0F0]">
+            <div className="flex flex-wrap gap-6 py-4 border-y border-[#F0F0F0]">
               {campaign.budget_inr && (
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-[0.12em] text-[#9A9C9A] mb-0.5">Budget</p>
@@ -99,6 +108,14 @@ function CampaignDetailModal({ campaign, onApply, onClose }: {
                   <p className="text-[14px] font-bold text-[#4A4C4A]">{fmtDate(campaign.content_deadline)}</p>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Campaign description — after all quick info */}
+          {campaign.goal && (
+            <div>
+              <p className="text-[11px] font-black uppercase tracking-widest text-[#9A9C9A] mb-1.5">What the brand needs</p>
+              <p className="text-[14px] text-[#4A4C4A] leading-relaxed whitespace-pre-wrap">{campaign.goal}</p>
             </div>
           )}
         </div>
