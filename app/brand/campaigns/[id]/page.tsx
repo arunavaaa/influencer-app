@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { ArrowLeft, Pencil } from 'lucide-react'
 import { ApplicationsPanel } from './applications-panel'
+import { GoalText } from './goal-text'
 
 export default async function CampaignDetail({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ filter?: string }> }) {
   const { id } = await params
@@ -25,7 +26,7 @@ export default async function CampaignDetail({ params, searchParams }: { params:
   // Filtered applications for display
   let appQuery = supabase
     .from('applications')
-    .select('id, status, cover_note, proposed_rate_inr, created_at, creator_profiles(id, display_name, city, niches, instagram_followers, username, profile_photo_url)')
+    .select('id, status, cover_note, proposed_rate_inr, created_at, creator_profiles(id, user_id, display_name, city, niches, instagram_followers, username, profile_photo_url)')
     .eq('campaign_id', id)
     .order('created_at', { ascending: false })
   if (filter !== 'all') appQuery = appQuery.eq('status', filter)
@@ -81,7 +82,7 @@ export default async function CampaignDetail({ params, searchParams }: { params:
         {campaign.goal && (
           <div>
             <p className="text-[11px] font-black uppercase tracking-widest text-[#9A9C9A] mb-1.5">Goal / Description</p>
-            <p className="text-[15px] text-[#121511] leading-relaxed">{campaign.goal}</p>
+            <GoalText text={campaign.goal} />
           </div>
         )}
 
@@ -172,10 +173,13 @@ export default async function CampaignDetail({ params, searchParams }: { params:
           ))}
         </div>
 
-        {/* Hint text */}
-        <p className="text-[12px] text-[#9A9C9A] mb-4">Click "Review Application" to read the full cover note and take action.</p>
+        {/* Hint text — only when there are applications to act on */}
+        {(applications?.length ?? 0) > 0 && (
+          <p className="text-[12px] text-[#9A9C9A] mb-4">Click "Review Application" to read the full cover note and take action.</p>
+        )}
 
         <ApplicationsPanel
+          key={filter}
           applications={(applications ?? []) as any}
           campaignId={id}
           brandId={brand.id}
