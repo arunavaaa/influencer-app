@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { MessageBrandButton } from './message-brand-button'
+import { CampaignBriefModal } from './campaign-brief-modal'
 
 const STATUS_CONFIG = {
   pending:    { color: 'bg-[#F5F5F5] text-[#6A6C6A]',        msg: '' },
@@ -19,7 +20,14 @@ export default async function Applications({ searchParams }: { searchParams: Pro
   const { data: creator } = await supabase.from('creator_profiles').select('id').eq('user_id', user.id).maybeSingle()
   if (!creator) redirect('/onboarding/creator')
 
-  let query = supabase.from('applications').select('*, campaigns(id, title, platforms, niches, budget_inr, brand_id, brand_profiles(brand_name, logo_url))').eq('creator_id', creator.id).order('created_at', { ascending: false })
+  // Mark all application activity notifications as read
+  await supabase.from('notifications')
+    .update({ read: true })
+    .eq('user_id', user.id)
+    .in('type', ['shortlisted', 'selected', 'rejected'])
+    .eq('read', false)
+
+  let query = supabase.from('applications').select('*, campaigns(id, title, goal, platforms, niches, deliverable_formats, budget_inr, application_deadline, content_deadline, brand_id, brand_profiles(brand_name, logo_url))').eq('creator_id', creator.id).order('created_at', { ascending: false })
   if (filter !== 'all') query = query.eq('status', filter)
   const { data: applications } = await query
 
@@ -85,36 +93,93 @@ export default async function Applications({ searchParams }: { searchParams: Pro
         <div className="space-y-4">
           {applications.map((app: any) => {
             const cfg = STATUS_CONFIG[app.status as keyof typeof STATUS_CONFIG] ?? STATUS_CONFIG.pending
-            const brandId = app.campaigns?.brand_id
+            const c = app.campaigns
+            const brandId = c?.brand_id
             const convoId = brandId ? (convoByBrand[brandId] ?? null) : null
+            const fmtDate = (d: string) => new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+
             return (
               <div key={app.id} className="bg-white rounded-[20px] p-5">
-                <div className="flex items-start justify-between gap-4 mb-3">
+
+                {/* Header — brand + title + status */}
+                <div className="flex items-start justify-between gap-4 mb-4">
                   <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-[10px] bg-[#163300] flex items-center justify-center text-[#9FE870] font-black text-[14px] flex-shrink-0">
-                      {app.campaigns?.brand_profiles?.brand_name?.[0]?.toUpperCase() ?? '?'}
+                    <div className="w-10 h-10 rounded-[10px] bg-[#163300] flex items-center justify-center text-[#9FE870] font-black text-[14px] flex-shrink-0 overflow-hidden">
+                      {c?.brand_profiles?.logo_url
+                        ? <img src={c.brand_profiles.logo_url} alt={c.brand_profiles.brand_name ?? ''} className="w-full h-full object-cover" />
+                        : c?.brand_profiles?.brand_name?.[0]?.toUpperCase() ?? '?'}
                     </div>
                     <div>
-                      <p className="text-[13px] text-[#6A6C6A]">{app.campaigns?.brand_profiles?.brand_name}</p>
-                      <p className="text-[16px] font-black text-[#121511]">{app.campaigns?.title}</p>
+                      <p className="text-[12px] text-[#6A6C6A] font-medium">{c?.brand_profiles?.brand_name}</p>
+                      <p className="text-[17px] font-black text-[#121511]">{c?.title}</p>
                     </div>
                   </div>
                   <span className={`px-3 py-1 rounded-full text-[12px] font-bold capitalize flex-shrink-0 ${cfg.color}`}>{app.status}</span>
                 </div>
-                {cfg.msg && <p className="text-[13px] font-semibold text-[#163300] mb-2">{cfg.msg}</p>}
-                <div className="flex flex-wrap gap-1.5 mb-3">
-                  {app.campaigns?.platforms?.map((p: string) => <span key={p} className="text-[11px] px-2 py-0.5 bg-[#EDEFEB] text-[#4A4C4A] rounded-full font-semibold">{p}</span>)}
+
+                {/* Status message */}
+                {cfg.msg && (
+                  <div className="bg-[#EDEFEB] rounded-[10px] px-3 py-2 mb-4">
+                    <p className="text-[13px] font-bold text-[#163300]">{cfg.msg}</p>
+                  </div>
+                )}
+
+                {/* Campaign goal */}
+                {c?.goal && (
+                  <div className="mb-4">
+                    <p className="text-[11px] font-bold uppercase tracking-widest text-[#9A9C9A] mb-1">Campaign Brief</p>
+                    <CampaignBriefModal brief={c.goal} />
+                  </div>
+                )}
+
+                {/* Platforms + formats + niches */}
+                {((c?.platforms?.length ?? 0) > 0 || (c?.deliverable_formats?.length ?? 0) > 0 || (c?.niches?.length ?? 0) > 0) && (
+                  <div className="flex flex-wrap gap-1.5 mb-4">
+                    {c?.platforms?.map((p: string) => (
+                      <span key={p} className="text-[11px] px-2.5 py-1 bg-[#EDEFEB] text-[#163300] rounded-full font-semibold">{p}</span>
+                    ))}
+                    {c?.deliverable_formats?.map((f: string) => (
+                      <span key={f} className="text-[11px] px-2.5 py-1 bg-[#F0EDFF] text-[#5B3FD9] rounded-full font-semibold">{f}</span>
+                    ))}
+                    {c?.niches?.map((n: string) => (
+                      <span key={n} className="text-[11px] px-2.5 py-1 bg-blue-50 text-blue-700 rounded-full font-semibold">{n}</span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Money row */}
+                <div className="grid grid-cols-2 gap-3 mb-4">
+                  {c?.budget_inr && (
+                    <div className="bg-[#F9F9F9] rounded-[12px] px-3 py-2.5">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-[#9A9C9A] mb-0.5">Brand's Budget</p>
+                      <p className="text-[16px] font-black text-[#163300]">₹{c.budget_inr.toLocaleString('en-IN')}</p>
+                    </div>
+                  )}
+                  {app.proposed_rate_inr && (
+                    <div className="bg-[#F9F9F9] rounded-[12px] px-3 py-2.5">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-[#9A9C9A] mb-0.5">Your Proposed Rate</p>
+                      <p className="text-[16px] font-black text-[#121511]">₹{app.proposed_rate_inr.toLocaleString('en-IN')}</p>
+                    </div>
+                  )}
                 </div>
-                <div className="flex items-center justify-between text-[13px] text-[#6A6C6A] mb-4">
-                  {app.proposed_rate_inr && <span>Your rate: <strong className="text-[#163300]">₹{app.proposed_rate_inr.toLocaleString('en-IN')}</strong></span>}
-                  <span>{new Date(app.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+
+                {/* Dates row */}
+                <div className="flex flex-wrap gap-x-6 gap-y-2 mb-4 text-[12px] text-[#6A6C6A]">
+                  <span>Applied on <strong className="text-[#121511]">{fmtDate(app.created_at)}</strong></span>
+                  {c?.application_deadline && (
+                    <span>Apply by <strong className="text-[#121511]">{fmtDate(c.application_deadline)}</strong></span>
+                  )}
+                  {c?.content_deadline && (
+                    <span>Content due <strong className="text-[#121511]">{fmtDate(c.content_deadline)}</strong></span>
+                  )}
                 </div>
-                {/* Message available for all applications — no shortlist gate */}
+
+                {/* Message button */}
                 {brandId && (
                   <MessageBrandButton
                     creatorId={creator.id}
                     brandId={brandId}
-                    campaignId={app.campaigns?.id}
+                    campaignId={c?.id}
                     existingConvoId={convoId}
                   />
                 )}
