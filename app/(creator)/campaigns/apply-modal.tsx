@@ -238,11 +238,12 @@ function ApplyFormModal({ campaignId, creatorId, brandUserId, campaign, onSucces
 }
 
 // ── Main export: two-button actions on each campaign card ────────────────────
-export function CampaignActions({ campaignId, creatorId, brandUserId, campaign }: {
+export function CampaignActions({ campaignId, creatorId, brandUserId, campaign, applied = false }: {
   campaignId: string
   creatorId: string
   brandUserId: string | null
   campaign: Campaign
+  applied?: boolean
 }) {
   const router = useRouter()
   const [view, setView] = useState<'closed' | 'detail' | 'apply'>('closed')
@@ -255,31 +256,37 @@ export function CampaignActions({ campaignId, creatorId, brandUserId, campaign }
   return (
     <>
       <div className="flex gap-2">
-        {/* Secondary: View campaign details */}
+        {/* View is always accessible — even after applying */}
         <button
           onClick={() => setView('detail')}
           className="flex-1 py-2.5 border-2 border-[#163300]/20 text-[#163300] text-[13px] font-semibold rounded-full hover:border-[#163300] transition-colors"
         >
           View
         </button>
-        {/* Primary: Go straight to apply form */}
-        <button
-          onClick={() => setView('apply')}
-          className="flex-1 py-2.5 bg-[#163300] text-[#9FE870] text-[13px] font-bold rounded-full hover:bg-[#1f4a00] transition-colors"
-        >
-          Apply →
-        </button>
+        {applied ? (
+          <div className="flex-1 py-2.5 bg-[#9FE870]/20 text-[#163300] text-[13px] font-bold rounded-full text-center">
+            Applied ✓
+          </div>
+        ) : (
+          <button
+            onClick={() => setView('apply')}
+            className="flex-1 py-2.5 bg-[#163300] text-[#9FE870] text-[13px] font-bold rounded-full hover:bg-[#1f4a00] transition-colors"
+          >
+            Apply →
+          </button>
+        )}
       </div>
 
       {view === 'detail' && (
         <CampaignDetailModal
           campaign={campaign}
-          onApply={() => setView('apply')}
+          onApply={() => !applied && setView('apply')}
           onClose={() => setView('closed')}
         />
       )}
 
-      {view === 'apply' && (
+      {/* Apply form only if not already applied */}
+      {view === 'apply' && !applied && (
         <ApplyFormModal
           campaignId={campaignId}
           creatorId={creatorId}

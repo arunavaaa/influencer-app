@@ -81,11 +81,26 @@ export default async function BrowseCampaigns({ searchParams }: { searchParams: 
                   <p className="text-[13px] text-[#4A4C4A] leading-relaxed mb-3 line-clamp-3">{c.goal}</p>
                 )}
 
-                {/* Tags — platforms, deliverable formats, niches */}
-                <div className="flex flex-wrap gap-1.5 mb-3">
-                  {c.platforms?.map((p: string) => <span key={p} className="text-[11px] px-2 py-0.5 bg-[#EDEFEB] text-[#4A4C4A] rounded-full font-semibold">{p}</span>)}
-                  {c.deliverable_formats?.map((f: string) => <span key={f} className="text-[11px] px-2 py-0.5 bg-[#F5F0FF] text-purple-700 rounded-full font-semibold">{f}</span>)}
-                  {c.niches?.slice(0, 2).map((n: string) => <span key={n} className="text-[11px] px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full font-semibold">{n}</span>)}
+                {/* Tags — labeled by category */}
+                <div className="space-y-1.5 mb-3">
+                  {(c.platforms?.length ?? 0) > 0 && (
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-[9px] font-black uppercase tracking-[0.1em] text-[#B0B2AF] flex-shrink-0">Platform</span>
+                      {c.platforms?.map((p: string) => <span key={p} className="text-[11px] px-2 py-0.5 bg-[#EDEFEB] text-[#4A4C4A] rounded-full font-semibold">{p}</span>)}
+                    </div>
+                  )}
+                  {(c.deliverable_formats?.length ?? 0) > 0 && (
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-[9px] font-black uppercase tracking-[0.1em] text-[#B0B2AF] flex-shrink-0">Format</span>
+                      {c.deliverable_formats?.map((f: string) => <span key={f} className="text-[11px] px-2 py-0.5 bg-[#F5F0FF] text-purple-700 rounded-full font-semibold">{f}</span>)}
+                    </div>
+                  )}
+                  {(c.niches?.length ?? 0) > 0 && (
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-[9px] font-black uppercase tracking-[0.1em] text-[#B0B2AF] flex-shrink-0">Niche</span>
+                      {c.niches?.slice(0, 2).map((n: string) => <span key={n} className="text-[11px] px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full font-semibold">{n}</span>)}
+                    </div>
+                  )}
                 </div>
 
                 {/* Budget + deadlines */}
@@ -103,26 +118,25 @@ export default async function BrowseCampaigns({ searchParams }: { searchParams: 
                   </div>
                 </div>
 
-                {/* Action */}
+                {/* Action — View always available; Apply → disabled once applied */}
                 <div className="mt-auto">
-                  {applied
-                    ? <div className="w-full py-2.5 bg-[#9FE870]/20 text-[#163300] text-[13px] font-bold rounded-full text-center">Applied ✓</div>
-                    : <CampaignActions
-                        campaignId={c.id}
-                        creatorId={creator.id}
-                        brandUserId={c.brand_profiles?.user_id ?? null}
-                        campaign={{
-                          title: c.title,
-                          goal: c.goal,
-                          platforms: c.platforms,
-                          deliverable_formats: c.deliverable_formats,
-                          niches: c.niches,
-                          budget_inr: c.budget_inr,
-                          application_deadline: c.application_deadline,
-                          content_deadline: c.content_deadline,
-                          brand_name: c.brand_profiles?.brand_name,
-                        }}
-                      />}
+                  <CampaignActions
+                    campaignId={c.id}
+                    creatorId={creator.id}
+                    brandUserId={c.brand_profiles?.user_id ?? null}
+                    applied={applied}
+                    campaign={{
+                      title: c.title,
+                      goal: c.goal,
+                      platforms: c.platforms,
+                      deliverable_formats: c.deliverable_formats,
+                      niches: c.niches,
+                      budget_inr: c.budget_inr,
+                      application_deadline: c.application_deadline,
+                      content_deadline: c.content_deadline,
+                      brand_name: c.brand_profiles?.brand_name,
+                    }}
+                  />
                 </div>
               </div>
             )
