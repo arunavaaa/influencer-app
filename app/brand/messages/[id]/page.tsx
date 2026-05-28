@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { ChatBox } from './chat-box'
+import { AutoRefresh } from '@/components/ui/auto-refresh'
 
 export default async function BrandChat({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -99,6 +100,8 @@ export default async function BrandChat({ params }: { params: Promise<{ id: stri
         recipientNotifLink={`/messages/${id}`}
         nudgeProps={nudgeProps}
       />
+      {/* Re-run server components so badge counts reflect the mark-as-read above */}
+      <AutoRefresh />
     </div>
   )
 }

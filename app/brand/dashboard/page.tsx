@@ -27,22 +27,32 @@ export default async function BrandDashboard() {
   ]
   const completionPct = Math.round((completionItems.filter(i => i.done).length / completionItems.length) * 100)
 
-  const [{ count: activeCampaigns }, { count: totalApplicants }, { count: conversations }] = await Promise.all([
+  const [
+    { count: activeCampaigns },
+    { count: totalApplicants },
+    { count: conversations },
+    { count: newAppsCount },
+    msgNotifsResult,
+  ] = await Promise.all([
     supabase.from('campaigns').select('*', { count: 'exact', head: true }).eq('brand_id', brand.id).eq('status', 'open'),
     supabase.from('applications').select('campaigns!inner(brand_id)', { count: 'exact', head: true }).eq('campaigns.brand_id', brand.id),
     supabase.from('conversations').select('*', { count: 'exact', head: true }).eq('brand_id', brand.id),
+    supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('user_id', user.id).eq('type', 'new_application').eq('read', false),
+    // Fetch links to deduplicate — count unique conversations, not individual messages
+    supabase.from('notifications').select('link').eq('user_id', user.id).eq('type', 'new_message').eq('read', false),
   ])
+  const newMessagesCount = new Set((msgNotifsResult.data ?? []).map((n: { link: string }) => n.link)).size
 
   const { data: recentApps } = await supabase
     .from('applications')
-    .select('id, status, created_at, creator_profiles(display_name, city, niches, username), campaigns!inner(title, brand_id)')
+    .select('id, status, created_at, creator_profiles(display_name, city, niches, username, profile_photo_url), campaigns!inner(id, title, brand_id)')
     .eq('campaigns.brand_id', brand.id)
     .order('created_at', { ascending: false })
     .limit(5)
 
   const { data: recentConvos } = await supabase
     .from('conversations')
-    .select('id, last_message_at, creator_accepted, creator_profiles(display_name, username), messages(content, created_at)')
+    .select('id, last_message_at, creator_accepted, creator_profiles(display_name, username, profile_photo_url), messages(content, created_at)')
     .eq('brand_id', brand.id)
     .order('last_message_at', { ascending: false })
     .limit(3)
@@ -65,13 +75,20 @@ export default async function BrandDashboard() {
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4 mb-8">
         {[
-          { label: 'Active Campaigns', value: activeCampaigns ?? 0, href: '/brand/campaigns' },
-          { label: 'Total Applicants', value: totalApplicants ?? 0, href: '/brand/campaigns' },
-          { label: 'Conversations', value: conversations ?? 0, href: '/brand/messages' },
+          { label: 'Active Campaigns', value: activeCampaigns ?? 0, href: '/brand/campaigns', newCount: 0 },
+          { label: 'Total Applicants', value: totalApplicants ?? 0, href: '/brand/campaigns', newCount: newAppsCount ?? 0 },
+          { label: 'Conversations', value: conversations ?? 0, href: '/brand/messages', newCount: 0 },
         ].map(s => (
           <Link key={s.label} href={s.href} className="bg-white rounded-[20px] p-5 border border-transparent hover:border-[#163300] transition-colors">
-            <p className="text-[36px] font-black text-[#163300]">{s.value}</p>
-            <p className="text-[14px] text-[#6A6C6A] mt-1">{s.label}</p>
+            <div className="flex items-start justify-between gap-2 mb-1">
+              <p className="text-[36px] font-black text-[#163300] leading-none">{s.value}</p>
+              {s.newCount > 0 && (
+                <span className="px-2 py-0.5 bg-[#9FE870] text-[#163300] text-[11px] font-black rounded-full flex-shrink-0 mt-1">
+                  {s.newCount} new
+                </span>
+              )}
+            </div>
+            <p className="text-[14px] text-[#6A6C6A]">{s.label}</p>
           </Link>
         ))}
       </div>
@@ -118,16 +135,18 @@ export default async function BrandDashboard() {
           ) : (
             <div className="space-y-3">
               {recentApps.map((app: any) => (
-                <div key={app.id} className="flex items-center gap-4 p-3 rounded-[14px] hover:bg-[#EDEFEB] transition-colors">
-                  <div className="w-10 h-10 rounded-full bg-[#163300] flex items-center justify-center text-[#9FE870] font-black text-[14px] flex-shrink-0">
-                    {app.creator_profiles?.display_name?.[0]?.toUpperCase() ?? '?'}
+                <div key={app.id} className="flex items-center gap-3 p-3 rounded-[14px] hover:bg-[#EDEFEB] transition-colors">
+                  <div className="w-10 h-10 rounded-full bg-[#163300] flex items-center justify-center text-[#9FE870] font-black text-[14px] flex-shrink-0 overflow-hidden">
+                    {app.creator_profiles?.profile_photo_url
+                      ? <img src={app.creator_profiles.profile_photo_url} alt={app.creator_profiles.display_name ?? ''} className="w-full h-full object-cover" />
+                      : app.creator_profiles?.display_name?.[0]?.toUpperCase() ?? '?'}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-[14px] font-bold text-[#121511] truncate">{app.creator_profiles?.display_name ?? 'Creator'}</p>
                     <p className="text-[12px] text-[#6A6C6A] truncate">Applied to: {app.campaigns?.title}</p>
                   </div>
                   <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold capitalize flex-shrink-0 ${STATUS_COLOR[app.status] ?? 'bg-[#F5F5F5] text-[#6A6C6A]'}`}>{app.status}</span>
-                  <Link href={`/brand/campaigns/${app.campaigns?.brand_id}`} className="text-[12px] font-bold text-[#163300] hover:underline flex-shrink-0">View</Link>
+                  <Link href={`/brand/campaigns/${app.campaigns?.id}`} className="text-[12px] font-bold text-[#163300] hover:underline flex-shrink-0">View</Link>
                 </div>
               ))}
             </div>
@@ -137,7 +156,14 @@ export default async function BrandDashboard() {
         {/* Recent messages */}
         <div className="bg-white rounded-[24px] p-6">
           <div className="flex items-center justify-between mb-5">
-            <h2 className="text-[18px] font-black text-[#121511]">Recent Messages</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-[18px] font-black text-[#121511]">Recent Messages</h2>
+              {(newMessagesCount ?? 0) > 0 && (
+                <span className="min-w-[20px] h-5 px-1 bg-red-500 text-white text-[11px] font-black rounded-full flex items-center justify-center leading-none">
+                  {(newMessagesCount ?? 0) > 99 ? '99+' : newMessagesCount}
+                </span>
+              )}
+            </div>
             <Link href="/brand/messages" className="text-[13px] font-semibold text-[#163300] hover:underline">View all →</Link>
           </div>
           {!recentConvos?.length ? (
@@ -149,13 +175,15 @@ export default async function BrandDashboard() {
           ) : (
             <div className="space-y-3">
               {recentConvos.map((c: any) => (
-                <Link key={c.id} href={`/brand/messages/${c.id}`} className="flex items-center gap-3 p-3 rounded-[14px] hover:bg-[#EDEFEB] transition-colors block">
-                  <div className="w-10 h-10 rounded-full bg-[#163300] flex items-center justify-center text-[#9FE870] font-black text-[14px] flex-shrink-0">
-                    {c.creator_profiles?.display_name?.[0]?.toUpperCase() ?? '?'}
+                <Link key={c.id} href={`/brand/messages/${c.id}`} className="flex items-center gap-3 p-3 rounded-[14px] hover:bg-[#EDEFEB] transition-colors">
+                  <div className="w-10 h-10 rounded-full bg-[#163300] flex items-center justify-center text-[#9FE870] font-black text-[14px] flex-shrink-0 overflow-hidden">
+                    {c.creator_profiles?.profile_photo_url
+                      ? <img src={c.creator_profiles.profile_photo_url} alt={c.creator_profiles.display_name ?? ''} className="w-full h-full object-cover" />
+                      : c.creator_profiles?.display_name?.[0]?.toUpperCase() ?? '?'}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-[14px] font-bold text-[#121511] truncate">{c.creator_profiles?.display_name ?? 'Creator'}</p>
-                    <p className="text-[12px] text-[#6A6C6A] truncate">{c.messages?.[0]?.content ?? 'No messages yet'}</p>
+                    <p className="text-[12px] text-[#6A6C6A] truncate">{c.messages?.length ? c.messages[c.messages.length - 1].content : 'No messages yet'}</p>
                   </div>
                 </Link>
               ))}

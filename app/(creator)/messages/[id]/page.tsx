@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { ChatBox } from '@/app/brand/messages/[id]/chat-box'
 import { AcceptRequest } from './accept-request'
+import { AutoRefresh } from '@/components/ui/auto-refresh'
 
 export default async function CreatorChat({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -16,11 +17,19 @@ export default async function CreatorChat({ params }: { params: Promise<{ id: st
 
   const { data: convo } = await supabase
     .from('conversations')
-    .select('*, brand_profiles(brand_name, city, website_url)')
+    .select('*, brand_profiles(user_id, brand_name, city, website_url, logo_url)')
     .eq('id', id).eq('creator_id', creator.id).maybeSingle()
   if (!convo) notFound()
 
   const { data: messages } = await supabase.from('messages').select('*').eq('conversation_id', id).order('created_at', { ascending: true })
+
+  // Mark any new_message notifications for this conversation as read
+  await supabase.from('notifications')
+    .update({ read: true })
+    .eq('user_id', user.id)
+    .eq('type', 'new_message')
+    .eq('link', `/messages/${id}`)
+    .eq('read', false)
 
   const pending = convo.creator_accepted === null
   const canChat = convo.creator_accepted === true
@@ -31,8 +40,10 @@ export default async function CreatorChat({ params }: { params: Promise<{ id: st
         <Link href="/messages" className="flex items-center gap-1.5 text-[13px] text-[#6A6C6A] hover:text-[#163300] transition-colors flex-shrink-0">
           <ArrowLeft className="w-3.5 h-3.5" /> Messages
         </Link>
-        <div className="w-10 h-10 rounded-full bg-[#163300] flex items-center justify-center text-[#9FE870] font-black text-[14px]">
-          {convo.brand_profiles?.brand_name?.[0]?.toUpperCase() ?? '?'}
+        <div className="w-10 h-10 rounded-full bg-[#163300] flex items-center justify-center text-[#9FE870] font-black text-[14px] overflow-hidden">
+          {convo.brand_profiles?.logo_url
+            ? <img src={convo.brand_profiles.logo_url} alt={convo.brand_profiles.brand_name ?? ''} className="w-full h-full object-cover" />
+            : convo.brand_profiles?.brand_name?.[0]?.toUpperCase() ?? '?'}
         </div>
         <div>
           <p className="text-[15px] font-bold text-[#121511]">{convo.brand_profiles?.brand_name}</p>
@@ -52,7 +63,16 @@ export default async function CreatorChat({ params }: { params: Promise<{ id: st
         </div>
       )}
 
-      <ChatBox conversationId={id} initialMessages={messages ?? []} currentUserId={user.id} canChat={canChat} />
+      <ChatBox
+        conversationId={id}
+        initialMessages={messages ?? []}
+        currentUserId={user.id}
+        canChat={canChat}
+        recipientUserId={convo.brand_profiles?.user_id ?? undefined}
+        recipientNotifLink={`/brand/messages/${id}`}
+      />
+      {/* Re-run server components so badge counts reflect the mark-as-read above */}
+      <AutoRefresh />
     </div>
   )
 }

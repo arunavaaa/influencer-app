@@ -17,13 +17,22 @@ export default async function BrandLayout({ children }: { children: React.ReactN
     .eq('user_id', user.id)
     .maybeSingle()
 
+  // Unread notifications for brand — count unique conversations, not individual messages
+  const [msgNotifsResult, { count: newAppsCount }] = await Promise.all([
+    supabase.from('notifications').select('link')
+      .eq('user_id', user.id).eq('type', 'new_message').eq('read', false),
+    supabase.from('notifications').select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id).eq('type', 'new_application').eq('read', false),
+  ])
+  const unreadMessagesCount = new Set((msgNotifsResult.data ?? []).map((n: { link: string }) => n.link)).size
+
   return (
     <div className="fixed inset-0 flex overflow-hidden bg-[#EDEFEB]" style={{ fontFamily: 'Inter, Arial, sans-serif' }}>
       <aside className="w-[220px] flex-shrink-0 bg-white border-r border-[#E8E8E8] flex flex-col h-full z-40">
         <div className="px-5 pt-6 pb-4 border-b border-[#E8E8E8]">
           <span className="text-[18px] font-black text-[#163300] block">GrabCollab</span>
         </div>
-        <BrandSideNav />
+        <BrandSideNav unreadMessagesCount={unreadMessagesCount ?? 0} newAppsCount={newAppsCount ?? 0} />
         <BrandSidebarProfileMenu
           brandName={brand?.brand_name ?? 'Brand'}
           logoUrl={brand?.logo_url ?? null}
