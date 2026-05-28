@@ -49,41 +49,41 @@ function CampaignDetailModal({ campaign, onApply, onClose }: {
         {/* Scrollable body — quick info first, description last */}
         <div className="overflow-y-auto flex-1 px-6 py-5 space-y-4">
 
-          {/* Platform / Format / Niche — each with its own label */}
+          {/* Platform / Format / Niche — 3 equal-width columns side by side */}
           {((campaign.platforms?.length ?? 0) > 0 ||
             (campaign.deliverable_formats?.length ?? 0) > 0 ||
             (campaign.niches?.length ?? 0) > 0) && (
-            <div className="space-y-3">
-              {(campaign.platforms?.length ?? 0) > 0 && (
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.12em] text-[#9A9C9A] mb-1.5">Platform</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {campaign.platforms?.map(p => (
-                      <span key={p} className="text-[12px] px-3 py-1 bg-[#F0F7EC] text-[#163300] rounded-full font-bold border border-[#163300]/15">{p}</span>
-                    ))}
-                  </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.12em] text-[#9A9C9A] mb-1.5">Platform</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {(campaign.platforms?.length ?? 0) > 0
+                    ? campaign.platforms?.map(p => (
+                        <span key={p} className="text-[12px] px-3 py-1 bg-[#F0F7EC] text-[#163300] rounded-full font-bold border border-[#163300]/15">{p}</span>
+                      ))
+                    : <span className="text-[13px] text-[#C0C2C0]">—</span>}
                 </div>
-              )}
-              {(campaign.deliverable_formats?.length ?? 0) > 0 && (
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.12em] text-[#9A9C9A] mb-1.5">Deliverable Format</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {campaign.deliverable_formats?.map(f => (
-                      <span key={f} className="text-[12px] px-3 py-1 bg-[#F5F0FF] text-purple-700 rounded-full font-semibold">{f}</span>
-                    ))}
-                  </div>
+              </div>
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.12em] text-[#9A9C9A] mb-1.5">Deliverable Format</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {(campaign.deliverable_formats?.length ?? 0) > 0
+                    ? campaign.deliverable_formats?.map(f => (
+                        <span key={f} className="text-[12px] px-3 py-1 bg-[#F5F0FF] text-purple-700 rounded-full font-semibold">{f}</span>
+                      ))
+                    : <span className="text-[13px] text-[#C0C2C0]">—</span>}
                 </div>
-              )}
-              {(campaign.niches?.length ?? 0) > 0 && (
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.12em] text-[#9A9C9A] mb-1.5">Looking for Creators in</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {campaign.niches?.map(n => (
-                      <span key={n} className="text-[12px] px-3 py-1 bg-blue-50 text-blue-700 rounded-full font-semibold">{n}</span>
-                    ))}
-                  </div>
+              </div>
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.12em] text-[#9A9C9A] mb-1.5">Looking for Creators in</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {(campaign.niches?.length ?? 0) > 0
+                    ? campaign.niches?.map(n => (
+                        <span key={n} className="text-[12px] px-3 py-1 bg-blue-50 text-blue-700 rounded-full font-semibold">{n}</span>
+                      ))
+                    : <span className="text-[13px] text-[#C0C2C0]">—</span>}
                 </div>
-              )}
+              </div>
             </div>
           )}
 
