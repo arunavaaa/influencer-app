@@ -3,19 +3,28 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-const LINKS = [
-  { href: '/brand/dashboard',  label: 'Dashboard' },
-  { href: '/brand/campaigns',  label: 'My Campaigns' },
-  { href: '/brand/search',     label: 'Search Creators' },
-  { href: '/brand/messages',   label: 'Messages' },
-]
+function Badge({ count }: { count: number }) {
+  if (count <= 0) return null
+  return (
+    <span className="ml-auto min-w-[20px] h-5 px-1 bg-red-500 text-white text-[11px] font-black rounded-full flex items-center justify-center leading-none">
+      {count > 99 ? '99+' : count}
+    </span>
+  )
+}
 
-export function BrandSideNav() {
+export function BrandSideNav({ unreadMessagesCount = 0, newAppsCount = 0 }: { unreadMessagesCount?: number; newAppsCount?: number }) {
   const pathname = usePathname()
+
+  const LINKS = [
+    { href: '/brand/dashboard',  label: 'Dashboard',        badge: null },
+    { href: '/brand/campaigns',  label: 'My Campaigns',     badge: newAppsCount > 0 ? newAppsCount : null },
+    { href: '/brand/search',     label: 'Search Creators',  badge: null },
+    { href: '/brand/messages',   label: 'Messages',         badge: unreadMessagesCount > 0 ? unreadMessagesCount : null },
+  ]
 
   return (
     <nav className="flex-1 px-3 py-4 space-y-0.5">
-      {LINKS.map(({ href, label }) => {
+      {LINKS.map(({ href, label, badge }) => {
         const active = pathname === href || (href !== '/brand/dashboard' && pathname.startsWith(href))
         return (
           <Link
@@ -28,6 +37,7 @@ export function BrandSideNav() {
             }`}
           >
             {label}
+            {typeof badge === 'number' && <Badge count={badge} />}
           </Link>
         )
       })}

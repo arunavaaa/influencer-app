@@ -12,7 +12,7 @@ export default async function CreatorMessages() {
 
   const { data: convos } = await supabase
     .from('conversations')
-    .select('id, creator_accepted, initiated_by, last_message_at, brand_profiles(brand_name, city), messages(content, created_at)')
+    .select('id, creator_accepted, initiated_by, last_message_at, brand_profiles(brand_name, city, logo_url), messages(content, created_at)')
     .eq('creator_id', creator.id)
     .order('last_message_at', { ascending: false })
 
@@ -36,8 +36,10 @@ export default async function CreatorMessages() {
             {requests.map((c: any, i: number) => (
               <Link key={c.id} href={`/messages/${c.id}`}
                 className={`flex items-center gap-4 px-5 py-4 hover:bg-amber-100 transition-colors ${i > 0 ? 'border-t border-amber-200' : ''}`}>
-                <div className="w-12 h-12 rounded-full bg-[#163300] flex items-center justify-center text-[#9FE870] font-black text-[16px] flex-shrink-0">
-                  {c.brand_profiles?.brand_name?.[0]?.toUpperCase() ?? '?'}
+                <div className="w-12 h-12 rounded-full bg-[#163300] flex items-center justify-center text-[#9FE870] font-black text-[16px] flex-shrink-0 overflow-hidden">
+                  {c.brand_profiles?.logo_url
+                    ? <img src={c.brand_profiles.logo_url} alt={c.brand_profiles.brand_name ?? ''} className="w-full h-full object-cover" />
+                    : c.brand_profiles?.brand_name?.[0]?.toUpperCase() ?? '?'}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
@@ -61,8 +63,10 @@ export default async function CreatorMessages() {
             {chats.map((c: any, i: number) => (
               <Link key={c.id} href={`/messages/${c.id}`}
                 className={`flex items-center gap-4 px-5 py-4 hover:bg-[#EDEFEB] transition-colors ${i > 0 ? 'border-t border-[#F0F0F0]' : ''}`}>
-                <div className="w-12 h-12 rounded-full bg-[#163300] flex items-center justify-center text-[#9FE870] font-black text-[16px] flex-shrink-0">
-                  {c.brand_profiles?.brand_name?.[0]?.toUpperCase() ?? '?'}
+                <div className="w-12 h-12 rounded-full bg-[#163300] flex items-center justify-center text-[#9FE870] font-black text-[16px] flex-shrink-0 overflow-hidden">
+                  {c.brand_profiles?.logo_url
+                    ? <img src={c.brand_profiles.logo_url} alt={c.brand_profiles.brand_name ?? ''} className="w-full h-full object-cover" />
+                    : c.brand_profiles?.brand_name?.[0]?.toUpperCase() ?? '?'}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-[15px] font-bold text-[#121511] truncate">{c.brand_profiles?.brand_name ?? 'Brand'}</p>

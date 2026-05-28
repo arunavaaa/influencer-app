@@ -172,7 +172,7 @@ function ApplyFormModal({ campaignId, creatorId, brandUserId, campaign, onSucces
         user_id: brandUserId,
         type: 'new_application',
         message: `You have a new application for "${campaign.title}"`,
-        link: `/brand/campaigns`,
+        link: `/brand/campaigns/${campaignId}`,
         read: false,
       })
     }

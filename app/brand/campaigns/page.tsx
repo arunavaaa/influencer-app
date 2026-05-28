@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
+import { AutoRefresh } from '@/components/ui/auto-refresh'
 
 const STATUS_BADGE: Record<string, string> = {
   open: 'bg-[#9FE870]/20 text-[#163300]',
@@ -32,6 +33,22 @@ export default async function BrandCampaigns({ searchParams }: { searchParams: P
 
   const { data: brand } = await supabase.from('brand_profiles').select('id').eq('user_id', user.id).maybeSingle()
   if (!brand) redirect('/onboarding/brand')
+
+  // Fetch unread new_application notifications BEFORE marking as read (drives per-campaign "new" badge)
+  const { data: newAppNotifs } = await supabase
+    .from('notifications').select('link')
+    .eq('user_id', user.id).eq('type', 'new_application').eq('read', false)
+  // Extract campaign IDs from links like '/brand/campaigns/UUID'
+  const newAppCampaignIds = new Set(
+    (newAppNotifs ?? []).map((n: { link: string }) => n.link.split('/brand/campaigns/')[1]).filter(Boolean)
+  )
+
+  // Now mark all as read — clears the sidebar badge
+  await supabase.from('notifications')
+    .update({ read: true })
+    .eq('user_id', user.id)
+    .eq('type', 'new_application')
+    .eq('read', false)
 
   // Auto-close any open campaigns whose application_deadline has passed
   const todayStr = new Date().toISOString().split('T')[0] // YYYY-MM-DD in UTC, close enough for IST MVP
@@ -75,6 +92,7 @@ export default async function BrandCampaigns({ searchParams }: { searchParams: P
 
   return (
     <div className="p-6 md:p-8 max-w-[900px]">
+      <AutoRefresh />
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-[28px] font-black text-[#121511]">My Campaigns</h1>
         <Link href="/brand/campaigns/new" className="bg-[#163300] text-[#9FE870] font-bold text-[14px] px-6 py-3 rounded-full hover:bg-[#1f4a00] transition-colors">
@@ -136,7 +154,7 @@ export default async function BrandCampaigns({ searchParams }: { searchParams: P
             const days = c.status === 'open' ? daysUntil(c.application_deadline) : null
             const hasWarning = days !== null && days >= 0 && days <= 3
             return (
-              <div key={c.id} className={`bg-white rounded-[20px] p-5 ${c.status === 'closed' ? 'opacity-60' : ''} ${hasWarning ? 'ring-1 ring-amber-200' : ''}`}>
+              <div key={c.id} className={`bg-white rounded-[20px] p-5 ${c.status === 'closed' ? 'opacity-60' : ''}`}>
                 {/* Title row */}
                 <div className="flex items-start justify-between gap-4 mb-0.5">
                   <div className="flex items-center gap-2 flex-wrap min-w-0">
@@ -193,7 +211,12 @@ export default async function BrandCampaigns({ searchParams }: { searchParams: P
                   </div>
                   <div>
                     <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#9A9C9A] mb-1">Applicants</p>
-                    <p className={`text-[16px] font-black ${appCount > 0 ? 'text-[#163300]' : 'text-[#D0D0D0]'}`}>{appCount}</p>
+                    <div className="flex items-center gap-2">
+                      <p className={`text-[16px] font-black ${appCount > 0 ? 'text-[#163300]' : 'text-[#D0D0D0]'}`}>{appCount}</p>
+                      {newAppCampaignIds.has(c.id) && (
+                        <span className="px-2 py-0.5 bg-[#9FE870] text-[#163300] text-[10px] font-black rounded-full leading-tight">new</span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

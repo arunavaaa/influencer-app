@@ -18,6 +18,14 @@ export default async function CampaignDetail({ params, searchParams }: { params:
   const { data: campaign } = await supabase.from('campaigns').select('*').eq('id', id).eq('brand_id', brand.id).maybeSingle()
   if (!campaign) notFound()
 
+  // Mark this campaign's new_application notifications as read
+  await supabase.from('notifications')
+    .update({ read: true })
+    .eq('user_id', user.id)
+    .eq('type', 'new_application')
+    .eq('link', `/brand/campaigns/${id}`)
+    .eq('read', false)
+
   // Counts from all applications (not filtered)
   const { data: allApps } = await supabase.from('applications').select('status').eq('campaign_id', id)
   const counts = { all: 0, pending: 0, shortlisted: 0, selected: 0, rejected: 0 }

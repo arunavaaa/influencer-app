@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { OnboardingFeedbackPrompt } from '@/components/ui/onboarding-feedback-prompt'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
@@ -51,6 +52,14 @@ export default function BrandOnboarding() {
 
   // Onboarding state
   const [step, setStep] = useState(1)
+  const [showFeedbackPrompt, setShowFeedbackPrompt] = useState(false)
+
+  // Show onboarding feedback prompt 1.5s after reaching the success step
+  useEffect(() => {
+    if (step !== TOTAL) return
+    const t = setTimeout(() => setShowFeedbackPrompt(true), 1500)
+    return () => clearTimeout(t)
+  }, [step])
   const [saving, setSaving] = useState(false)
   const [data, setData] = useState({
     brand_name: '', website_url: '',
@@ -411,6 +420,10 @@ export default function BrandOnboarding() {
         )}
       </div>
       </div>
+
+      {showFeedbackPrompt && (
+        <OnboardingFeedbackPrompt userRole="brand" onClose={() => setShowFeedbackPrompt(false)} />
+      )}
     </div>
   )
 }

@@ -54,7 +54,7 @@ export default async function BrowseCampaigns({ searchParams }: { searchParams: 
             const days = daysUntil(c.application_deadline)
             const hasWarning = days !== null && days >= 0 && days <= 3
             return (
-              <div key={c.id} className={`bg-white rounded-[20px] p-5 border transition-colors flex flex-col ${hasWarning ? 'border-amber-200 hover:border-amber-300' : 'border-transparent hover:border-[#163300]/30'}`}>
+              <div key={c.id} className="bg-white rounded-[20px] p-5 border border-transparent hover:border-[#163300]/30 transition-colors flex flex-col">
                 {/* Brand + title */}
                 <div className="flex items-start gap-3 mb-3">
                   <div className="w-10 h-10 rounded-[10px] bg-[#163300] flex items-center justify-center text-[#9FE870] font-black text-[14px] flex-shrink-0 overflow-hidden">

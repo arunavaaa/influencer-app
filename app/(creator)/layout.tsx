@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { CreatorSideNav } from './side-nav'
 import { SidebarProfileMenu } from './sidebar-profile-menu'
+import { FeedbackWidget } from '@/components/ui/feedback-widget'
 
 export default async function CreatorLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -57,6 +58,7 @@ export default async function CreatorLayout({ children }: { children: React.Reac
         />
       </aside>
       <main className="flex-1 overflow-y-auto">{children}</main>
+      <FeedbackWidget />
     </div>
   )
 }

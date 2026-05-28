@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { MessageBrandButton } from './message-brand-button'
 import { CampaignBriefModal } from './campaign-brief-modal'
+import { AutoRefresh } from '@/components/ui/auto-refresh'
 
 const STATUS_CONFIG = {
   pending:    { color: 'bg-[#F5F5F5] text-[#6A6C6A]',        msg: '' },
@@ -41,6 +42,7 @@ export default async function Applications({ searchParams }: { searchParams: Pro
 
   return (
     <div className="p-6 md:p-8 max-w-[800px]">
+      <AutoRefresh />
       <h1 className="text-[28px] font-black text-[#121511] mb-6">My Applications</h1>
 
       <div className="flex gap-2 mb-6 bg-white rounded-[14px] p-1 w-fit flex-wrap">

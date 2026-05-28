@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { BrandSideNav } from './side-nav'
 import { BrandSidebarProfileMenu } from './sidebar-profile-menu'
+import { FeedbackWidget } from '@/components/ui/feedback-widget'
 
 export default async function BrandLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -39,6 +40,7 @@ export default async function BrandLayout({ children }: { children: React.ReactN
         />
       </aside>
       <main className="flex-1 overflow-y-auto">{children}</main>
+      <FeedbackWidget />
     </div>
   )
 }

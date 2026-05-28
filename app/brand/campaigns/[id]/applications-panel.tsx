@@ -21,6 +21,7 @@ export type ApplicationForPanel = {
   created_at: string
   creator_profiles: {
     id: string
+    user_id: string | null
     display_name: string | null
     city: string | null
     niches: string[] | null
@@ -54,16 +55,20 @@ export function ApplicationsPanel({
 
     if (error) { toast.error('Failed to update'); setLoading(null); return }
 
-    const creatorId = app.creator_profiles?.id
-    if (creatorId && status === 'selected') {
+    const creatorProfileId = app.creator_profiles?.id
+    const creatorUserId = app.creator_profiles?.user_id
+    if (creatorProfileId && status === 'selected') {
       await supabase.from('conversations').upsert(
-        { brand_id: brandId, creator_id: creatorId, initiated_by: 'brand', creator_accepted: true, campaign_id: campaignId },
+        { brand_id: brandId, creator_id: creatorProfileId, initiated_by: 'brand', creator_accepted: true, campaign_id: campaignId },
         { onConflict: 'brand_id,creator_id' }
       )
-      await supabase.from('notifications').insert({ user_id: creatorId, type: 'selected', message: `You've been selected for the campaign!`, link: '/applications' })
+      if (creatorUserId) await supabase.from('notifications').insert({ user_id: creatorUserId, type: 'selected', message: `You've been selected for the campaign!`, link: '/applications' })
     }
-    if (creatorId && status === 'shortlisted') {
-      await supabase.from('notifications').insert({ user_id: creatorId, type: 'shortlisted', message: `You've been shortlisted!`, link: '/applications' })
+    if (creatorUserId && status === 'shortlisted') {
+      await supabase.from('notifications').insert({ user_id: creatorUserId, type: 'shortlisted', message: `You've been shortlisted!`, link: '/applications' })
+    }
+    if (creatorUserId && status === 'rejected') {
+      await supabase.from('notifications').insert({ user_id: creatorUserId, type: 'rejected', message: `An application status has been updated.`, link: '/applications' })
     }
 
     const statusLabel: Record<string, string> = {
@@ -81,12 +86,12 @@ export function ApplicationsPanel({
   }
 
   async function openChat(app: ApplicationForPanel) {
-    const creatorId = app.creator_profiles?.id
-    if (!creatorId) return
+    const creatorProfileId = app.creator_profiles?.id
+    if (!creatorProfileId) return
     setLoading('chat')
-    const { data: existing } = await supabase.from('conversations').select('id').eq('brand_id', brandId).eq('creator_id', creatorId).maybeSingle()
+    const { data: existing } = await supabase.from('conversations').select('id').eq('brand_id', brandId).eq('creator_id', creatorProfileId).maybeSingle()
     if (existing) { window.location.href = `/brand/messages/${existing.id}`; return }
-    const { data } = await supabase.from('conversations').insert({ brand_id: brandId, creator_id: creatorId, initiated_by: 'brand', creator_accepted: true, campaign_id: campaignId }).select('id').single()
+    const { data } = await supabase.from('conversations').insert({ brand_id: brandId, creator_id: creatorProfileId, initiated_by: 'brand', creator_accepted: true, campaign_id: campaignId }).select('id').single()
     if (data) window.location.href = `/brand/messages/${data.id}`
     setLoading(null)
   }
@@ -173,7 +178,12 @@ export function ApplicationsPanel({
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-[17px] font-black text-[#121511]">{reviewing.creator_profiles?.display_name ?? 'Creator'}</p>
-                <p className="text-[13px] text-[#6A6C6A]">{reviewing.creator_profiles?.city ?? '—'}</p>
+                {reviewing.creator_profiles?.username && (
+                  <Link href={`/${reviewing.creator_profiles.username}`} target="_blank"
+                    className="text-[13px] text-[#163300] font-semibold hover:underline">
+                    View profile ↗
+                  </Link>
+                )}
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
                 <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold capitalize ${STATUS_COLOR[reviewing.status]}`}>{reviewing.status}</span>
@@ -229,15 +239,14 @@ export function ApplicationsPanel({
             </div>
 
             {/* Actions footer */}
-            <div className="p-5 pt-4 border-t border-[#E8E8E8] space-y-2">
-              {reviewing.creator_profiles?.username && (
-                <Link
-                  href={`/${reviewing.creator_profiles.username}`}
-                  target="_blank"
-                  className="flex items-center justify-center w-full py-2.5 bg-[#EDEFEB] text-[#121511] text-[14px] font-semibold rounded-[12px] hover:bg-[#E0E2DE] transition-colors"
-                >
-                  View Full Profile ↗
-                </Link>
+            <div className="p-5 pt-4 border-t border-[#E8E8E8] space-y-3">
+
+              {/* Shortlisted — now time to make the final call */}
+              {reviewing.status === 'shortlisted' && (
+                <div className="bg-blue-50 rounded-[10px] px-3 py-2 text-center">
+                  <p className="text-[11px] font-bold text-blue-600 uppercase tracking-wide mb-0.5">Step 2 — Final decision</p>
+                  <p className="text-[12px] text-blue-700">You've shortlisted this creator. Now confirm or pass.</p>
+                </div>
               )}
 
               {/* Status-change actions */}
@@ -248,25 +257,34 @@ export function ApplicationsPanel({
                     disabled={!!loading}
                     className="flex-1 py-2.5 bg-blue-50 text-blue-700 text-[13px] font-bold rounded-[12px] hover:bg-blue-100 transition-colors disabled:opacity-60"
                   >
-                    {loading === 'shortlisted' ? '...' : '⭐ Shortlist'}
+                    {loading === 'shortlisted' ? '...' : '⭐ Save to Shortlist'}
                   </button>
                   <button
                     onClick={() => updateStatus(reviewing, 'rejected')}
                     disabled={!!loading}
                     className="flex-1 py-2.5 bg-red-50 text-red-600 text-[13px] font-bold rounded-[12px] hover:bg-red-100 transition-colors disabled:opacity-60"
                   >
-                    {loading === 'rejected' ? '...' : 'Reject'}
+                    {loading === 'rejected' ? '...' : 'Not a Fit'}
                   </button>
                 </div>
               )}
               {reviewing.status === 'shortlisted' && (
-                <button
-                  onClick={() => updateStatus(reviewing, 'selected')}
-                  disabled={!!loading}
-                  className="w-full py-2.5 bg-[#9FE870]/20 text-[#163300] text-[13px] font-bold rounded-[12px] hover:bg-[#9FE870]/30 transition-colors disabled:opacity-60"
-                >
-                  {loading === 'selected' ? '...' : '✓ Mark as Selected'}
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => updateStatus(reviewing, 'selected')}
+                    disabled={!!loading}
+                    className="flex-1 py-2.5 bg-[#9FE870] text-[#163300] text-[13px] font-black rounded-[12px] hover:bg-[#8ed65f] transition-colors disabled:opacity-60"
+                  >
+                    {loading === 'selected' ? '...' : '✓ Select Creator'}
+                  </button>
+                  <button
+                    onClick={() => updateStatus(reviewing, 'rejected')}
+                    disabled={!!loading}
+                    className="flex-1 py-2.5 bg-red-50 text-red-600 text-[13px] font-bold rounded-[12px] hover:bg-red-100 transition-colors disabled:opacity-60"
+                  >
+                    {loading === 'rejected' ? '...' : 'Not a Fit'}
+                  </button>
+                </div>
               )}
               {reviewing.status === 'rejected' && (
                 <button
@@ -274,11 +292,11 @@ export function ApplicationsPanel({
                   disabled={!!loading}
                   className="w-full py-2.5 bg-[#EDEFEB] text-[#121511] text-[13px] font-semibold rounded-[12px] hover:bg-[#E0E2DE] transition-colors disabled:opacity-60"
                 >
-                  {loading === 'pending' ? '...' : 'Undo Reject'}
+                  {loading === 'pending' ? '...' : 'Move Back to Pending'}
                 </button>
               )}
 
-              {/* Message — always available, no shortlist required */}
+              {/* Message — always available */}
               <button
                 onClick={() => openChat(reviewing)}
                 disabled={!!loading}

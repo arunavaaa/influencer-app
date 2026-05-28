@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { OnboardingFeedbackPrompt } from '@/components/ui/onboarding-feedback-prompt'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
@@ -51,6 +52,14 @@ export default function CreatorOnboarding() {
   const [acLoading, setAcLoading] = useState(false)
 
   const [step, setStep] = useState(1)
+  const [showFeedbackPrompt, setShowFeedbackPrompt] = useState(false)
+
+  // Show onboarding feedback prompt 1.5s after reaching the success step
+  useEffect(() => {
+    if (step !== TOTAL) return
+    const t = setTimeout(() => setShowFeedbackPrompt(true), 1500)
+    return () => clearTimeout(t)
+  }, [step])
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -679,6 +688,10 @@ export default function CreatorOnboarding() {
         )}
       </div>
       </div>
+
+      {showFeedbackPrompt && (
+        <OnboardingFeedbackPrompt userRole="creator" onClose={() => setShowFeedbackPrompt(false)} />
+      )}
     </div>
   )
 }
