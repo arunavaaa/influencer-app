@@ -19,18 +19,22 @@ function Dot() {
 export function CreatorSideNav({
   pendingRequestsCount = 0,
   unreadNotifsCount = 0,
+  unreadMsgConvosCount = 0,
 }: {
   pendingRequestsCount?: number
   unreadNotifsCount?: number
+  unreadMsgConvosCount?: number
 }) {
   const pathname = usePathname()
+  // Total Messages badge = pending brand requests + conversations with unread messages
+  const msgBadge = pendingRequestsCount + unreadMsgConvosCount
 
   const LINKS = [
     { href: '/dashboard',    label: 'Dashboard',        badge: null },
     { href: '/campaigns',    label: 'Browse Campaigns', badge: null },
     { href: '/applications', label: 'My Applications',  badge: unreadNotifsCount > 0 ? 'dot' as const : null },
     { href: '/projects',     label: 'Active Projects',  badge: null },
-    { href: '/messages',     label: 'Messages',         badge: pendingRequestsCount > 0 ? pendingRequestsCount : null },
+    { href: '/messages',     label: 'Messages',         badge: msgBadge > 0 ? msgBadge : null },
   ]
 
   return (

@@ -10,11 +10,14 @@ export default async function CreatorDashboard() {
   const { data: creator } = await supabase.from('creator_profiles').select('*').eq('user_id', user.id).maybeSingle()
   if (!creator) redirect('/onboarding/creator')
 
-  const [{ count: appsSent }, { count: shortlisted }, { count: selected }, { count: packagesCount }] = await Promise.all([
+  const [{ count: appsSent }, { count: shortlisted }, { count: selected }, { count: packagesCount },
+         { count: newShortlists }, { count: newSelections }] = await Promise.all([
     supabase.from('applications').select('*', { count: 'exact', head: true }).eq('creator_id', creator.id),
     supabase.from('applications').select('*', { count: 'exact', head: true }).eq('creator_id', creator.id).eq('status', 'shortlisted'),
     supabase.from('applications').select('*', { count: 'exact', head: true }).eq('creator_id', creator.id).eq('status', 'selected'),
     supabase.from('content_packages').select('*', { count: 'exact', head: true }).eq('creator_id', creator.id),
+    supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('user_id', user.id).eq('type', 'shortlisted').eq('read', false),
+    supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('user_id', user.id).eq('type', 'selected').eq('read', false),
   ])
 
   const completionItems = [
@@ -37,10 +40,19 @@ export default async function CreatorDashboard() {
     .eq('initiated_by', 'brand')
     .order('created_at', { ascending: false })
 
+  // Count unique conversations with unread messages (not individual messages)
+  const { data: unreadMsgNotifs } = await supabase
+    .from('notifications')
+    .select('link')
+    .eq('user_id', user.id)
+    .eq('type', 'new_message')
+    .eq('read', false)
+  const unreadMessages = new Set((unreadMsgNotifs ?? []).map((n: { link: string }) => n.link)).size
+
   // Accepted chats only — requests are shown separately
   const { data: recentMessages } = await supabase
     .from('conversations')
-    .select('id, last_message_at, brand_profiles(brand_name), messages(content)')
+    .select('id, last_message_at, brand_profiles(brand_name, logo_url), messages(content)')
     .eq('creator_id', creator.id)
     .eq('creator_accepted', true)
     .order('last_message_at', { ascending: false })
@@ -84,46 +96,23 @@ export default async function CreatorDashboard() {
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4 mb-8">
         {[
-          { label: 'Applications Sent', value: appsSent ?? 0, href: '/applications' },
-          { label: 'Shortlisted', value: shortlisted ?? 0, href: '/applications?filter=shortlisted' },
-          { label: 'Active Projects', value: selected ?? 0, href: '/projects' },
+          { label: 'Applications Sent', value: appsSent ?? 0, href: '/applications', newCount: 0 },
+          { label: 'Shortlisted', value: shortlisted ?? 0, href: '/applications?filter=shortlisted', newCount: newShortlists ?? 0 },
+          { label: 'Active Projects', value: selected ?? 0, href: '/projects', newCount: newSelections ?? 0 },
         ].map(s => (
           <Link key={s.label} href={s.href} className="bg-white rounded-[20px] p-5 border border-transparent hover:border-[#163300] transition-colors">
-            <p className="text-[36px] font-black text-[#163300]">{s.value}</p>
-            <p className="text-[14px] text-[#6A6C6A] mt-1">{s.label}</p>
+            <div className="flex items-start justify-between gap-2 mb-1">
+              <p className="text-[36px] font-black text-[#163300] leading-none">{s.value}</p>
+              {s.newCount > 0 && (
+                <span className="px-2 py-0.5 bg-[#9FE870] text-[#163300] text-[11px] font-black rounded-full flex-shrink-0 mt-1">
+                  {s.newCount} new
+                </span>
+              )}
+            </div>
+            <p className="text-[14px] text-[#6A6C6A]">{s.label}</p>
           </Link>
         ))}
       </div>
-
-      {/* Brand connection requests — shown prominently if any pending */}
-      {(pendingRequests?.length ?? 0) > 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-[20px] p-5 mb-6">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-[18px]">📩</span>
-            <h2 className="text-[16px] font-black text-amber-900">
-              {pendingRequests!.length === 1 ? '1 brand wants to connect' : `${pendingRequests!.length} brands want to connect`}
-            </h2>
-          </div>
-          <div className="space-y-2">
-            {pendingRequests!.map((r: any) => (
-              <div key={r.id} className="flex items-center justify-between gap-3 bg-white rounded-[12px] px-4 py-3">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-9 h-9 rounded-full bg-[#163300] flex items-center justify-center text-[#9FE870] font-black text-[13px] flex-shrink-0">
-                    {r.brand_profiles?.brand_name?.[0]?.toUpperCase() ?? '?'}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[14px] font-bold text-[#121511] truncate">{r.brand_profiles?.brand_name ?? 'Brand'}</p>
-                    <p className="text-[12px] text-amber-700">Wants to reach out to you</p>
-                  </div>
-                </div>
-                <Link href={`/messages/${r.id}`} className="flex-shrink-0 px-4 py-1.5 bg-[#163300] text-[#9FE870] text-[12px] font-bold rounded-full hover:bg-[#1f4a00] transition-colors">
-                  View Request →
-                </Link>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-6">
         {/* Open campaigns */}
@@ -159,24 +148,58 @@ export default async function CreatorDashboard() {
         {/* Recent messages */}
         <div className="bg-white rounded-[24px] p-6">
           <div className="flex items-center justify-between mb-5">
-            <h2 className="text-[18px] font-black text-[#121511]">Messages</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-[18px] font-black text-[#121511]">Messages</h2>
+              {((pendingRequests?.length ?? 0) + (unreadMessages ?? 0)) > 0 && (
+                <span className="min-w-[20px] h-5 px-1 bg-red-500 text-white text-[11px] font-black rounded-full flex items-center justify-center leading-none">
+                  {((pendingRequests?.length ?? 0) + (unreadMessages ?? 0)) > 99 ? '99+' : (pendingRequests?.length ?? 0) + (unreadMessages ?? 0)}
+                </span>
+              )}
+            </div>
             <Link href="/messages" className="text-[13px] font-semibold text-[#163300] hover:underline">View all →</Link>
           </div>
-          {!recentMessages?.length ? (
+
+          {!(pendingRequests?.length) && !recentMessages?.length ? (
             <div className="text-center py-8">
               <p className="text-[40px] mb-2">💬</p>
               <p className="text-[14px] text-[#6A6C6A]">No messages yet.</p>
             </div>
           ) : (
-            <div className="space-y-3">
-              {recentMessages.map((c: any) => (
-                <Link key={c.id} href={`/messages/${c.id}`} className="flex items-center gap-3 p-3 rounded-[12px] hover:bg-[#EDEFEB] transition-colors block">
-                  <div className="w-10 h-10 rounded-full bg-[#163300] flex items-center justify-center text-[#9FE870] font-black text-[13px] flex-shrink-0">
-                    {c.brand_profiles?.brand_name?.[0]?.toUpperCase() ?? '?'}
+            <div className="space-y-2">
+              {/* Pending brand requests — single compact summary row */}
+              {(pendingRequests?.length ?? 0) > 0 && (
+                <Link href="/messages"
+                  className="flex items-center justify-between gap-3 px-3 py-2 rounded-[10px] bg-amber-50 border border-amber-200 hover:bg-amber-100 transition-colors">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-[14px]">📩</span>
+                    <p className="text-[13px] font-bold text-amber-800 truncate">
+                      {pendingRequests!.length > 99
+                        ? '99+ brands want to connect'
+                        : pendingRequests!.length === 1
+                          ? '1 brand wants to connect'
+                          : `${pendingRequests!.length} brands want to connect`}
+                    </p>
+                  </div>
+                  <span className="text-[12px] font-bold text-amber-700 flex-shrink-0">View →</span>
+                </Link>
+              )}
+
+              {/* Divider if both exist */}
+              {(pendingRequests?.length ?? 0) > 0 && (recentMessages?.length ?? 0) > 0 && (
+                <div className="border-t border-[#F0F0F0] my-1" />
+              )}
+
+              {/* Active chats */}
+              {recentMessages?.map((c: any) => (
+                <Link key={c.id} href={`/messages/${c.id}`} className="flex items-center gap-3 p-3 rounded-[12px] hover:bg-[#EDEFEB] transition-colors">
+                  <div className="w-10 h-10 rounded-full bg-[#163300] flex items-center justify-center text-[#9FE870] font-black text-[13px] flex-shrink-0 overflow-hidden">
+                    {c.brand_profiles?.logo_url
+                      ? <img src={c.brand_profiles.logo_url} alt={c.brand_profiles.brand_name ?? ''} className="w-full h-full object-cover" />
+                      : c.brand_profiles?.brand_name?.[0]?.toUpperCase() ?? '?'}
                   </div>
                   <div className="min-w-0">
                     <p className="text-[14px] font-bold text-[#121511] truncate">{c.brand_profiles?.brand_name}</p>
-                    <p className="text-[12px] text-[#6A6C6A] truncate">{c.messages?.[0]?.content ?? 'No messages yet'}</p>
+                    <p className="text-[12px] text-[#6A6C6A] truncate">{c.messages?.length ? c.messages[c.messages.length - 1].content : 'No messages yet'}</p>
                   </div>
                 </Link>
               ))}

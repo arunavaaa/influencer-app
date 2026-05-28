@@ -18,7 +18,7 @@ export default async function CreatorLayout({ children }: { children: React.Reac
     .maybeSingle()
 
   // Badge counts for sidenav
-  const [{ count: pendingRequestsCount }, { count: unreadNotifsCount }] = await Promise.all([
+  const [pendingResult, notifsResult, msgNotifsResult] = await Promise.all([
     // Pending brand connection requests (cold outreach awaiting creator acceptance)
     supabase.from('conversations').select('*', { count: 'exact', head: true })
       .eq('creator_id', creator?.id ?? '')
@@ -29,7 +29,16 @@ export default async function CreatorLayout({ children }: { children: React.Reac
       .eq('user_id', user.id)
       .eq('read', false)
       .in('type', ['shortlisted', 'selected', 'rejected']),
+    // Unread message notifications — fetch links to deduplicate by conversation
+    supabase.from('notifications').select('link')
+      .eq('user_id', user.id)
+      .eq('type', 'new_message')
+      .eq('read', false),
   ])
+  const pendingRequestsCount = pendingResult.count ?? 0
+  const unreadNotifsCount = notifsResult.count ?? 0
+  // Count unique conversations with unread messages (1 per chat, not 1 per message)
+  const unreadMsgConvosCount = new Set((msgNotifsResult.data ?? []).map((n: { link: string }) => n.link)).size
 
   return (
     <div className="fixed inset-0 flex overflow-hidden bg-[#EDEFEB]" style={{ fontFamily: 'Inter, Arial, sans-serif' }}>
@@ -38,8 +47,9 @@ export default async function CreatorLayout({ children }: { children: React.Reac
           <span className="text-[18px] font-black text-[#163300] block">GrabCollab</span>
         </div>
         <CreatorSideNav
-          pendingRequestsCount={pendingRequestsCount ?? 0}
-          unreadNotifsCount={unreadNotifsCount ?? 0}
+          pendingRequestsCount={pendingRequestsCount}
+          unreadNotifsCount={unreadNotifsCount}
+          unreadMsgConvosCount={unreadMsgConvosCount}
         />
         <SidebarProfileMenu
           displayName={creator?.display_name ?? 'Creator'}
