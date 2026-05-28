@@ -81,6 +81,14 @@ export default async function BrowseCampaigns({ searchParams }: { searchParams: 
                   <p className="text-[13px] text-[#4A4C4A] leading-relaxed mb-3 line-clamp-3">{c.goal}</p>
                 )}
 
+                {/* Niche tags — no label */}
+                {(c.niches?.length ?? 0) > 0 && (
+                  <div className="flex flex-wrap gap-1 mb-3">
+                    {c.niches?.slice(0, 3).map((n: string) => (
+                      <span key={n} className="text-[11px] px-2.5 py-0.5 bg-blue-50 text-blue-700 rounded-full font-semibold">{n}</span>
+                    ))}
+                  </div>
+                )}
 
                 {/* Budget + deadlines */}
                 <div className="mb-4 space-y-0.5">
