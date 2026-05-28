@@ -15,8 +15,17 @@ export default async function BrandDashboard() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: brand } = await supabase.from('brand_profiles').select('id, brand_name').eq('user_id', user.id).maybeSingle()
+  const { data: brand } = await supabase.from('brand_profiles').select('id, brand_name, logo_url, description, instagram_url, youtube_url, other_social_links, niche, city').eq('user_id', user.id).maybeSingle()
   if (!brand) redirect('/onboarding/brand')
+
+  const completionItems = [
+    { label: 'Upload a brand logo',    done: !!brand.logo_url },
+    { label: 'Write a description',    done: !!brand.description },
+    { label: 'Add a social link',      done: !!(brand.instagram_url || brand.youtube_url || Object.keys(brand.other_social_links ?? {}).length) },
+    { label: 'Select your niche',      done: !!brand.niche },
+    { label: 'Add your city',          done: !!brand.city },
+  ]
+  const completionPct = Math.round((completionItems.filter(i => i.done).length / completionItems.length) * 100)
 
   const [{ count: activeCampaigns }, { count: totalApplicants }, { count: conversations }] = await Promise.all([
     supabase.from('campaigns').select('*', { count: 'exact', head: true }).eq('brand_id', brand.id).eq('status', 'open'),
@@ -60,12 +69,37 @@ export default async function BrandDashboard() {
           { label: 'Total Applicants', value: totalApplicants ?? 0, href: '/brand/campaigns' },
           { label: 'Conversations', value: conversations ?? 0, href: '/brand/messages' },
         ].map(s => (
-          <Link key={s.label} href={s.href} className="bg-white rounded-[20px] p-5 hover:shadow-md transition-shadow">
+          <Link key={s.label} href={s.href} className="bg-white rounded-[20px] p-5 border border-transparent hover:border-[#163300] transition-colors">
             <p className="text-[36px] font-black text-[#163300]">{s.value}</p>
             <p className="text-[14px] text-[#6A6C6A] mt-1">{s.label}</p>
           </Link>
         ))}
       </div>
+
+      {completionPct < 100 && (
+        <div className="bg-white rounded-[20px] p-5 mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-[14px] font-black text-[#121511]">Brands with complete profiles get up to 3× more applications.</p>
+            <Link href="/brand/profile" className="text-[12px] font-bold text-[#163300] hover:underline flex-shrink-0 ml-4">Edit profile →</Link>
+          </div>
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-[22px] font-black text-[#D97706] leading-none">{completionPct}%</span>
+            <div className="w-[160px] h-1.5 bg-[#EDEFEB] rounded-full">
+              <div className="h-1.5 bg-[#D97706] rounded-full transition-all" style={{ width: `${completionPct}%` }} />
+            </div>
+            <span className="text-[11px] font-semibold text-[#9A9C9A] uppercase tracking-wide">complete</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {completionItems.filter(i => !i.done).map(i => (
+              <Link key={i.label} href="/brand/profile"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#E8E8E8] bg-[#FAFAFA] hover:border-[#163300]/30 hover:bg-[#EDEFEB] transition-colors text-[12px] font-semibold text-[#4A4C4A]">
+                <span className="text-[#D97706] font-bold">+</span>
+                {i.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-6">
         {/* Recent applicants */}

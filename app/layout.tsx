@@ -24,7 +24,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-white text-[#121511]" style={{ fontFamily: 'var(--font-inter), Inter, Arial, sans-serif' }}>
+<body className="h-full flex flex-col bg-white text-[#121511]" style={{ fontFamily: 'var(--font-inter), Inter, Arial, sans-serif' }}>
         <Navbar />
         <main className="flex-1 flex flex-col pt-16">{children}</main>
         <Toaster richColors closeButton position="top-right" />

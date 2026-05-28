@@ -1,40 +1,109 @@
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/server'
-import { formatFollowers } from '@/lib/types'
+import Image from 'next/image'
+import { AnimatedStat } from '@/components/ui/animated-stat'
+import { FloatingHearts } from '@/components/ui/floating-hearts'
 
 export const metadata = {
-  title: "GrabCollab — Hire Indian Instagram Creators",
-  description: "Post a campaign, search verified creators, and hire the perfect match for your brand.",
+  title: "GrabCollab — Hire Indian Content Creators",
+  description: "Post a campaign, discover Indian creators across Instagram, YouTube, Facebook, X and more, and hire the perfect match for your brand.",
 }
 
+const CREATOR_IMAGES = [
+  'ananya-sharma', 'priya-kapoor', 'rahul-verma', 'meera-nair',
+  'arjun-singh', 'kavya-reddy', 'rohit-mehta', 'sneha-iyer',
+  'vikram-rao', 'aisha-khan', 'dev-patel', 'riya-gupta',
+  'aditya-kumar', 'pooja-sharma', 'kiran-das', 'nikhil-joshi',
+  'shreya-pillai',
+]
+
+const CREATOR_STATS = [
+  { impressions: 12_400_000, likes:  890_000 },
+  { impressions:  3_800_000, likes:  245_000 },
+  { impressions:  8_200_000, likes:  612_000 },
+  { impressions:  5_600_000, likes:  423_000 },
+  { impressions: 19_300_000, likes: 1_400_000 },
+  { impressions:  2_900_000, likes:  198_000 },
+  { impressions:  7_100_000, likes:  534_000 },
+  { impressions:  4_400_000, likes:  312_000 },
+  { impressions: 23_700_000, likes: 2_100_000 },
+  { impressions:  6_800_000, likes:  487_000 },
+  { impressions:  4_100_000, likes:  298_000 },
+  { impressions:  9_500_000, likes:  723_000 },
+  { impressions: 14_200_000, likes: 1_100_000 },
+  { impressions:  3_200_000, likes:  221_000 },
+  { impressions: 11_600_000, likes:  845_000 },
+  { impressions:  5_100_000, likes:  378_000 },
+  { impressions:  7_900_000, likes:  567_000 },
+]
+
 export default async function Landing() {
-  const supabase = await createClient()
-  const { data: creators } = await supabase
-    .from('creator_profiles')
-    .select('id, username, display_name, city, niches, instagram_followers, content_packages(price_inr)')
-    .eq('is_profile_live', true)
-    .order('instagram_followers', { ascending: false })
-    .limit(6)
-
-  const GRADIENTS = ['from-[#9FE870] to-[#163300]','from-violet-400 to-purple-700','from-orange-300 to-rose-600','from-sky-300 to-blue-700','from-amber-300 to-orange-600','from-pink-300 to-fuchsia-600']
-
   return (
     <div className="text-[#121511] overflow-x-hidden" style={{ fontFamily: 'Inter, Arial, sans-serif' }}>
+
       {/* Hero */}
-      <section className="bg-[#163300]">
-        <div className="max-w-[860px] mx-auto text-center px-5 md:px-10 pt-[100px] pb-16">
+      <section className="bg-[#163300] overflow-hidden relative">
+
+        {/* ── Layer 1: hearts BEHIND images ── */}
+        <FloatingHearts layer="back" />
+
+        {/* Text + CTAs — always above both heart layers */}
+        <div className="relative max-w-[900px] mx-auto text-center px-5 md:px-10 pt-[100px] pb-12" style={{ zIndex: 10 }}>
           <h1 className="text-[56px] md:text-[88px] font-black leading-[0.88] uppercase tracking-tight text-white mb-4">
-            Find Instagram<br /><span className="text-[#9FE870]">Creators</span><br />for Your Brand
+            Find Indian<br /><span className="text-[#9FE870]">Creators</span><br />for Your Brand
           </h1>
-          <p className="text-[18px] text-white/60 leading-relaxed max-w-[480px] mx-auto mb-10">
-            Post a campaign, search verified Indian creators, and hire the perfect match — all in one place.
+          <p className="text-[18px] text-white/60 leading-relaxed max-w-[520px] mx-auto mb-10">
+            Post a campaign, discover creators across all platforms, and hire the perfect match — all in one place for free.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-            <Link href="/brand/campaigns/new" className="bg-[#9FE870] text-[#163300] font-bold text-[17px] px-10 py-4 rounded-full hover:bg-[#8fdc60] transition-colors">Post a Campaign →</Link>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/onboarding/brand" className="bg-[#9FE870] text-[#163300] font-bold text-[17px] px-10 py-4 rounded-full hover:bg-[#8fdc60] transition-colors">Post a Campaign →</Link>
             <Link href="/brand/search" className="bg-white/10 border border-white/20 text-white font-bold text-[17px] px-10 py-4 rounded-full hover:bg-white/20 transition-colors">Browse Creators</Link>
           </div>
-          <p className="text-[14px] text-white/40">500+ creators · 100+ brands · Completely free to start</p>
         </div>
+
+        {/* ── Image strip — sits BETWEEN the two heart layers (z-index 5) ── */}
+        {/* Scrolling creator portrait strip — bottom 30% bleeds below hero edge */}
+        <div className="relative mt-10" style={{ marginBottom: '-140px', zIndex: 5 }}>
+          <div className="flex" style={{ gap: '24px', width: 'max-content', animation: 'marquee 40s linear infinite' }}>
+            {[...CREATOR_IMAGES, ...CREATOR_IMAGES].map((name, i) => {
+              const stats = CREATOR_STATS[i % CREATOR_STATS.length]
+              return (
+                <div
+                  key={i}
+                  className="flex-shrink-0 rounded-[20px] overflow-hidden relative"
+                  style={{ width: '264px', height: '468px' }}
+                >
+                  <Image
+                    src={`/influencers/${name}.png`}
+                    alt=""
+                    width={264}
+                    height={468}
+                    className="w-full h-full object-cover"
+                    draggable={false}
+                  />
+                  {/* Stats overlay — top-right, animated counters */}
+                  <div className="absolute top-3 right-3 flex flex-row gap-1.5">
+                    <AnimatedStat
+                      icon="👁"
+                      maxValue={stats.impressions}
+                      phase={(i % CREATOR_STATS.length) / CREATOR_STATS.length}
+                      duration={9000 + (i % 7) * 900}
+                    />
+                    <AnimatedStat
+                      icon="❤️"
+                      maxValue={stats.likes}
+                      phase={((i % CREATOR_STATS.length) / CREATOR_STATS.length + 0.4) % 1}
+                      duration={10500 + (i % 5) * 700}
+                    />
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* ── Layer 2: hearts IN FRONT of images — the "bypass gap" ones ── */}
+        <FloatingHearts layer="front" />
+
       </section>
 
       {/* Featured creators */}
@@ -48,28 +117,36 @@ export default async function Landing() {
             <Link href="/brand/search" className="inline-flex items-center gap-2 bg-[#163300] text-[#9FE870] font-bold text-[14px] px-6 py-3 rounded-full hover:bg-[#1c4400] transition-colors flex-shrink-0">See All →</Link>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {(creators?.length ? creators : Array.from({ length: 6 }, (_, i) => ({ id: `ex${i}`, username: null, display_name: ['Priya Sharma','Arjun Mehta','Kavya Rao','Vikram Singh','Meera Nair','Rahul Yadav'][i], city: ['Mumbai','Pune','Jaipur','Chennai','Kochi','Delhi'][i], niches: [['Fashion'],['Fitness'],['Comedy'],['Finance'],['Food'],['Comedy']][i], instagram_followers: [180000,34000,312000,94000,67000,312000][i], content_packages: [{ price_inr: 8000 }] }))).map((c: any, i) => {
-              const minPrice = c.content_packages?.length ? Math.min(...c.content_packages.map((p: any) => p.price_inr)) : null
-              return (
-                <Link key={c.id} href={c.username ? `/${c.username}` : '/signup?role=brand'} className="group bg-white rounded-[20px] overflow-hidden hover:-translate-y-1.5 hover:shadow-xl transition-all duration-200">
-                  <div className={`h-[120px] bg-gradient-to-br ${GRADIENTS[i % GRADIENTS.length]} relative flex items-center justify-center`}>
-                    <span className="text-[48px] font-black text-white/10">{c.display_name?.[0]}</span>
-                    <div className="absolute -bottom-7 left-4 w-14 h-14 rounded-full bg-[#163300] border-4 border-white flex items-center justify-center text-[#9FE870] font-black text-[18px] z-10">
-                      {c.display_name?.[0]}
-                    </div>
+            {[
+              { name: 'Zara Khan',        handle: '@zarakhan',        city: 'Mumbai',    niche: 'Fashion & Beauty',   platform: 'Instagram', followers: '245K', avatar: 'from-pink-400 to-rose-600' },
+              { name: 'SidTheWanderer',   handle: '@sidthewanderer',  city: 'Goa',       niche: 'Travel & Vlogs',     platform: 'YouTube',   followers: '189K', avatar: 'from-sky-400 to-blue-600' },
+              { name: 'Meera R.',         handle: '@meerawellness',   city: 'Bangalore', niche: 'Wellness & Fitness', platform: 'Instagram', followers: '92K',  avatar: 'from-emerald-400 to-teal-600' },
+              { name: 'BeWithNik',        handle: '@bewithnik',       city: 'Delhi',     niche: 'Comedy & Memes',     platform: 'Instagram', followers: '418K', avatar: 'from-amber-400 to-orange-500' },
+              { name: 'Divya Menon',      handle: '@divyaeats',       city: 'Chennai',   niche: 'Food & Cooking',     platform: 'Instagram', followers: '68K',  avatar: 'from-orange-400 to-red-500' },
+              { name: 'Arnav.Lens',       handle: '@arnavlens',       city: 'Jaipur',    niche: 'Photography & Art',  platform: 'Instagram', followers: '134K', avatar: 'from-violet-400 to-purple-700' },
+            ].map((c) => (
+              <Link key={c.handle} href="/onboarding/brand" className="group bg-white rounded-[20px] p-4 hover:-translate-y-1.5 hover:shadow-xl transition-all duration-200">
+                {/* Avatar + name row */}
+                <div className="flex items-center gap-3 mb-3">
+                  <div className={`w-11 h-11 rounded-full bg-gradient-to-br ${c.avatar} flex-shrink-0 flex items-center justify-center text-white font-black text-[17px] shadow-sm`}>
+                    {c.name[0]}
                   </div>
-                  <div className="pt-10 px-4 pb-4">
-                    <p className="text-[14px] font-bold text-[#121511] leading-tight">{c.display_name}</p>
-                    <p className="text-[12px] text-[#6A6C6A] mb-2">{c.city}{c.niches?.[0] ? ` · ${c.niches[0]}` : ''}</p>
-                    {c.instagram_followers && <p className="text-[12px] text-[#6A6C6A] mb-2">📸 {formatFollowers(c.instagram_followers)} followers</p>}
-                    <div className="pt-2 border-t border-[#F0F0F0] flex items-center justify-between">
-                      {minPrice ? <p className="text-[13px] font-black text-[#121511]">from ₹{minPrice.toLocaleString('en-IN')}</p> : <span />}
-                      <span className="text-[11px] font-bold text-[#163300] bg-[#EDEFEB] group-hover:bg-[#163300] group-hover:text-[#9FE870] px-2.5 py-1 rounded-full transition-colors">View →</span>
-                    </div>
+                  <div className="min-w-0">
+                    <p className="text-[14px] font-bold text-[#121511] leading-tight truncate">{c.name}</p>
+                    <p className="text-[12px] text-[#9A9C9A] truncate">{c.handle} · {c.city}</p>
                   </div>
-                </Link>
-              )
-            })}
+                </div>
+                {/* Niche + followers on one line */}
+                <div className="flex items-center gap-2 flex-wrap mb-3">
+                  <span className="text-[11px] font-semibold bg-[#EDEFEB] text-[#163300] px-2.5 py-1 rounded-full">{c.niche}</span>
+                  <span className="text-[11px] text-[#6A6C6A]">{c.followers} {c.platform === 'YouTube' ? 'subscribers' : 'followers'}</span>
+                </div>
+                {/* Footer */}
+                <div className="border-t border-[#F0F0F0] pt-3 flex justify-end">
+                  <span className="text-[11px] font-bold text-[#163300] bg-[#EDEFEB] group-hover:bg-[#163300] group-hover:text-[#9FE870] px-3 py-1.5 rounded-full transition-colors">View profile →</span>
+                </div>
+              </Link>
+            ))}
           </div>
         </div>
       </section>
@@ -90,7 +167,7 @@ export default async function Landing() {
                   </div>
                 ))}
               </div>
-              <Link href="/signup?role=brand" className="mt-8 inline-block bg-[#163300] text-[#9FE870] font-bold text-[15px] px-8 py-4 rounded-full hover:bg-[#1c4400] transition-colors">Join as Brand →</Link>
+              <Link href="/onboarding/brand" className="mt-8 inline-block bg-[#163300] text-[#9FE870] font-bold text-[15px] px-8 py-4 rounded-full hover:bg-[#1c4400] transition-colors">Join as Brand →</Link>
             </div>
             <div>
               <p className="text-[14px] font-bold uppercase tracking-widest text-[#163300] mb-5">For Creators</p>
@@ -102,7 +179,7 @@ export default async function Landing() {
                   </div>
                 ))}
               </div>
-              <Link href="/signup?role=creator" className="mt-8 inline-block bg-[#9FE870] text-[#163300] font-bold text-[15px] px-8 py-4 rounded-full hover:bg-[#8fdc60] transition-colors">Join as Creator →</Link>
+              <Link href="/onboarding/creator" className="mt-8 inline-block bg-[#9FE870] text-[#163300] font-bold text-[15px] px-8 py-4 rounded-full hover:bg-[#8fdc60] transition-colors">Join as Creator →</Link>
             </div>
           </div>
         </div>
@@ -111,7 +188,7 @@ export default async function Landing() {
       {/* Stats */}
       <section className="bg-[#163300] py-[80px] px-5 md:px-[70px]">
         <div className="max-w-[1360px] mx-auto flex flex-wrap justify-center gap-x-16 gap-y-8">
-          {[['500+','Creators'],['100+','Brands'],['10+','Niches'],['Free','To Join']].map(([v, l]) => (
+          {[['500+','Creators'],['100+','Brands'],['5+','Platforms'],['Free','To Join']].map(([v, l]) => (
             <div key={l} className="text-center">
               <p className="text-[52px] font-black text-[#9FE870] leading-none">{v}</p>
               <p className="text-[14px] text-white/50 mt-2">{l}</p>
@@ -138,7 +215,7 @@ export default async function Landing() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-12">
             <div>
               <p className="text-[20px] font-black text-[#163300] mb-2">GrabCollab</p>
-              <p className="text-[14px] text-[#6A6C6A] leading-relaxed">India&rsquo;s creator hiring portal for Instagram creators and brands.</p>
+              <p className="text-[14px] text-[#6A6C6A] leading-relaxed">India&rsquo;s creator hiring portal — connecting brands with creators across Instagram, YouTube, Facebook & more.</p>
             </div>
             <div>
               <p className="text-[12px] font-bold uppercase tracking-widest text-[#45A905] mb-4">Platform</p>
@@ -146,7 +223,7 @@ export default async function Landing() {
             </div>
             <div>
               <p className="text-[12px] font-bold uppercase tracking-widest text-[#45A905] mb-4">For Creators</p>
-              <ul className="space-y-2.5">{[['Join as Creator','/signup?role=creator'],['Browse Campaigns','/signup?role=creator'],['Creator Landing','/for-creators']].map(([l,h]) => <li key={l}><Link href={h} className="text-[14px] text-[#6A6C6A] hover:text-[#163300] transition-colors">{l}</Link></li>)}</ul>
+              <ul className="space-y-2.5">{[['Join as Creator','/onboarding/creator'],['Browse Campaigns','/onboarding/creator'],['Creator Landing','/for-creators']].map(([l,h]) => <li key={l}><Link href={h} className="text-[14px] text-[#6A6C6A] hover:text-[#163300] transition-colors">{l}</Link></li>)}</ul>
             </div>
             <div>
               <p className="text-[12px] font-bold uppercase tracking-widest text-[#45A905] mb-4">Company</p>
@@ -154,7 +231,7 @@ export default async function Landing() {
             </div>
           </div>
           <div className="border-t border-[#E8E8E8] pt-6 flex items-center justify-between text-[13px] text-[#6A6C6A]">
-            <span>© 2025 GrabCollab. All rights reserved.</span>
+            <span>© 2026 GrabCollab. All rights reserved.</span>
             <span>Made in India 🇮🇳</span>
           </div>
         </div>

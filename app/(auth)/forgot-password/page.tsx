@@ -1,25 +1,34 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { Loader2, ArrowLeft, CheckCircle } from 'lucide-react'
 import { toast } from 'sonner'
 
 export default function ForgotPasswordPage() {
-  const supabase = createClient()
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
+  const [emailError, setEmailError] = useState<string | null>(null)
 
   async function handleSubmit() {
     if (!email.includes('@')) { toast.error('Enter a valid email address'); return }
     setLoading(true)
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/callback?next=/reset-password`,
+    setEmailError(null)
+    const res = await fetch('/api/forgot-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email,
+        redirectTo: `${window.location.origin}/auth/callback?next=/reset-password`,
+      }),
     })
     setLoading(false)
-    if (error) { toast.error(error.message); return }
+    if (!res.ok) {
+      const { error } = await res.json()
+      setEmailError(error ?? 'Something went wrong. Please try again.')
+      return
+    }
     setSent(true)
   }
 
@@ -60,11 +69,14 @@ export default function ForgotPasswordPage() {
               <input
                 type="email"
                 value={email}
-                onChange={e => setEmail(e.target.value)}
+                onChange={e => { setEmail(e.target.value); setEmailError(null) }}
                 onKeyDown={e => e.key === 'Enter' && handleSubmit()}
                 placeholder="you@example.com"
-                className="w-full px-4 py-3 rounded-2xl border-2 border-[#E8E8E8] bg-white text-[15px] text-[#121511] placeholder-[#C0C2C0] focus:outline-none focus:border-[#163300] transition-colors"
+                className={`w-full px-4 py-3 rounded-2xl border-2 bg-white text-[15px] text-[#121511] placeholder-[#C0C2C0] focus:outline-none transition-colors ${emailError ? 'border-red-400 focus:border-red-500' : 'border-[#E8E8E8] focus:border-[#163300]'}`}
               />
+              {emailError && (
+                <p className="text-[13px] text-red-600 font-semibold mt-2">{emailError}</p>
+              )}
             </div>
 
             <button

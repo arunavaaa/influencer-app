@@ -18,13 +18,27 @@ export async function GET(request: Request) {
         .maybeSingle()
 
       if (!userData?.role) {
-        // New user — send to onboarding based on next param
+        // New user via signup with role param — send straight to onboarding
         if (next === 'brand') return NextResponse.redirect(`${origin}/onboarding/brand`)
-        return NextResponse.redirect(`${origin}/onboarding/creator`)
+        if (next === 'creator') return NextResponse.redirect(`${origin}/onboarding/creator`)
+        // Existing auth account but no users row — block and show error
+        if (!next) {
+          await supabase.auth.signOut()
+          return NextResponse.redirect(`${origin}/login?error=no_profile`)
+        }
+        // New user via login page Google button — ask them to choose their role
+        return NextResponse.redirect(`${origin}/login?step=choose-role`)
       }
 
       if (userData.role === 'brand') return NextResponse.redirect(`${origin}/brand/dashboard`)
-      if (userData.role === 'creator') return NextResponse.redirect(`${origin}/dashboard`)
+      if (userData.role === 'creator' || userData.role === 'influencer') {
+        const { data: profile } = await supabase.from('creator_profiles').select('id').eq('user_id', data.user.id).maybeSingle()
+        if (!profile) {
+          await supabase.auth.signOut()
+          return NextResponse.redirect(`${origin}/login?error=no_profile`)
+        }
+        return NextResponse.redirect(`${origin}/dashboard`)
+      }
     }
   }
 

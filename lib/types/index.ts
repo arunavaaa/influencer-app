@@ -118,17 +118,59 @@ export type Notification = {
 }
 
 export const NICHES = [
-  'Fashion', 'Beauty & Skincare', 'Food & Beverage', 'Health & Fitness',
-  'Tech & Gadgets', 'Finance', 'Travel', 'Education', 'Gaming', 'Automotive',
-  'Home & Lifestyle', 'Entertainment', 'E-commerce', 'Parenting', 'Comedy', 'Music', 'Other',
+  'Fashion & Style',
+  'Beauty & Skincare',
+  'Food & Cooking',
+  'Fitness & Gym',
+  'Comedy & Memes',
+  'Lifestyle & Vlogs',
+  'Finance & Investing',
+  'Tech & Gadgets',
+  'Travel',
+  'Education & Learning',
+  'Gaming',
+  'Music & Dance',
+  'Parenting & Family',
+  'Business & Entrepreneurship',
+  'Wedding & Bridal',
+  'Motivation & Mindset',
+  'Automobiles & Bikes',
+  'Home Decor & Interior',
+  'Spirituality & Astrology',
+  'Pets & Animals',
+  'Sustainable Living',
+  'Mental Health & Wellness',
+  'Art & Photography',
+  'Books & Reading',
+  'Other',
 ]
 
 export const NICHE_EMOJIS: Record<string, string> = {
-  'Fashion': '👗', 'Beauty & Skincare': '💄', 'Food & Beverage': '🍜',
-  'Health & Fitness': '💪', 'Tech & Gadgets': '💻', 'Finance': '💰',
-  'Travel': '✈️', 'Education': '📚', 'Gaming': '🎮', 'Automotive': '🏎️',
-  'Home & Lifestyle': '🌿', 'Entertainment': '🎬', 'E-commerce': '🛍️',
-  'Parenting': '👨‍👩‍👧', 'Comedy': '😂', 'Music': '🎵', 'Other': '✨',
+  'Fashion & Style':              '👗',
+  'Beauty & Skincare':            '💄',
+  'Food & Cooking':               '🍳',
+  'Fitness & Gym':                '💪',
+  'Comedy & Memes':               '😂',
+  'Lifestyle & Vlogs':            '🎥',
+  'Finance & Investing':          '💰',
+  'Tech & Gadgets':               '💻',
+  'Travel':                       '✈️',
+  'Education & Learning':         '📚',
+  'Gaming':                       '🎮',
+  'Music & Dance':                '🎵',
+  'Parenting & Family':           '👨‍👩‍👧',
+  'Business & Entrepreneurship':  '🚀',
+  'Wedding & Bridal':             '💍',
+  'Motivation & Mindset':         '🧠',
+  'Automobiles & Bikes':          '🏎️',
+  'Home Decor & Interior':        '🏠',
+  'Spirituality & Astrology':     '🔮',
+  'Pets & Animals':               '🐾',
+  'Sustainable Living':           '🌱',
+  'Mental Health & Wellness':     '🧘',
+  'Art & Photography':            '📸',
+  'Books & Reading':              '📖',
+  'Other':                        '✨',
 }
 
 export const CITIES = [
@@ -142,9 +184,45 @@ export const LANGUAGES = [
   'Malayalam', 'Bengali', 'Marathi', 'Gujarati', 'Punjabi',
 ]
 
-export const PLATFORMS = ['Instagram', 'YouTube', 'Facebook', 'Moj', 'LinkedIn', 'Other']
+export const PLATFORMS = ['Instagram', 'YouTube', 'X', 'Facebook', 'LinkedIn', 'Other']
 
-export const DELIVERABLE_FORMATS = ['Reel', 'Story', 'Post', 'Long Video', 'Shorts', 'UGC', 'Other']
+export const FOLLOWER_RANGES = [
+  { label: 'Under 1K',     min: 0,        value: '0-999' },
+  { label: '1K – 10K',    min: 1000,     value: '1000-9999' },
+  { label: '10K – 50K',   min: 10000,    value: '10000-49999' },
+  { label: '50K – 100K',  min: 50000,    value: '50000-99999' },
+  { label: '100K – 500K', min: 100000,   value: '100000-499999' },
+  { label: '500K – 1M',   min: 500000,   value: '500000-999999' },
+  { label: '1M+',          min: 1000000,  value: '1000000-' },
+]
+
+export const DELIVERABLE_FORMATS = ['Reel', 'Story', 'Post', 'Long Video', 'Shorts', 'Other']
+
+/**
+ * Platform → allowed deliverable formats mapping.
+ * This is the canonical source of truth used across the entire app.
+ * Instagram  → Reel, Story, Post
+ * YouTube    → Long Video, Shorts
+ * Facebook   → Reel, Post
+ * X          → Post
+ * LinkedIn   → Post
+ * Other      → Other
+ */
+export const DELIVERABLE_FORMATS_BY_PLATFORM: Record<string, string[]> = {
+  'Instagram': ['Reel', 'Story', 'Post'],
+  'YouTube':   ['Long Video', 'Shorts'],
+  'Facebook':  ['Reel', 'Post'],
+  'X':         ['Post'],
+  'LinkedIn':  ['Post'],
+  'Other':     ['Other'],
+}
+
+/** Returns the union of allowed formats for the selected platforms, in canonical display order. */
+export function getFormatsForPlatforms(platforms: string[]): string[] {
+  const available = new Set<string>()
+  platforms.forEach(p => (DELIVERABLE_FORMATS_BY_PLATFORM[p] ?? ['UGC', 'Other']).forEach(f => available.add(f)))
+  return DELIVERABLE_FORMATS.filter(f => available.has(f))
+}
 
 export function formatINR(paise: number): string {
   return `₹${paise.toLocaleString('en-IN')}`

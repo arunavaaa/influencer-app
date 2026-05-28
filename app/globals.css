@@ -1,7 +1,15 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+  overscroll-behavior: none;
+  height: 100%;
+}
+body {
+  overscroll-behavior: none;
+}
+
 @import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
@@ -175,6 +183,14 @@ html { scroll-behavior: smooth; }
   }
 }
 
+/* Sonner toast — close button inside, top-right */
+[data-sonner-toast] [data-close-button] {
+  right: 10px !important;
+  left: auto !important;
+  top: 10px !important;
+  transform: none !important;
+}
+
 /* === WISE COMPONENT UTILITIES === */
 
 /* Creator / Job Card */
@@ -280,4 +296,37 @@ html { scroll-behavior: smooth; }
 }
 .nav-link:hover {
   color: #163300;
+}
+
+@keyframes marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* ── Floating hearts (Instagram-Live style) ── */
+/* --ho = starting opacity (set per element), --hx = horizontal drift */
+
+/* Path A: gentle right drift */
+@keyframes floatHeartA {
+  0%   { transform: translateY(0)      translateX(0)                      scale(1);    opacity: var(--ho); }
+  20%  { transform: translateY(-52px)  translateX(calc(var(--hx) * 0.22)) scale(0.91); opacity: calc(var(--ho) * 0.82); }
+  55%  { transform: translateY(-138px) translateX(calc(var(--hx) * 0.68)) scale(0.68); opacity: calc(var(--ho) * 0.45); }
+  100% { transform: translateY(-252px) translateX(var(--hx))              scale(0.25); opacity: 0; }
+}
+
+/* Path B: leans left then sweeps right */
+@keyframes floatHeartB {
+  0%   { transform: translateY(0)      translateX(0)                       scale(1);    opacity: var(--ho); }
+  22%  { transform: translateY(-58px)  translateX(calc(var(--hx) * -0.18)) scale(0.88); opacity: calc(var(--ho) * 0.78); }
+  55%  { transform: translateY(-148px) translateX(calc(var(--hx) * 0.52))  scale(0.63); opacity: calc(var(--ho) * 0.40); }
+  100% { transform: translateY(-255px) translateX(var(--hx))               scale(0.22); opacity: 0; }
+}
+
+/* Path C: S-curve wobble */
+@keyframes floatHeartC {
+  0%   { transform: translateY(0)      translateX(0)                       scale(1);    opacity: var(--ho); }
+  18%  { transform: translateY(-46px)  translateX(calc(var(--hx) * 0.38))  scale(0.90); opacity: calc(var(--ho) * 0.85); }
+  42%  { transform: translateY(-105px) translateX(calc(var(--hx) * 0.08))  scale(0.74); opacity: calc(var(--ho) * 0.58); }
+  70%  { transform: translateY(-185px) translateX(calc(var(--hx) * 0.82))  scale(0.48); opacity: calc(var(--ho) * 0.28); }
+  100% { transform: translateY(-252px) translateX(var(--hx))               scale(0.20); opacity: 0; }
 }

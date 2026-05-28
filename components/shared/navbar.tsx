@@ -22,13 +22,24 @@ export function Navbar() {
   const [loading, setLoading] = useState(true)
   const menuRef = useRef<HTMLDivElement>(null)
 
+  // Compute hide before effects so they can bail out on hidden paths
+  const hide = HIDE_PATHS.some(p => pathname?.startsWith(p))
+
   useEffect(() => {
+    if (hide) { setLoading(false); return }
     const supabase = createClient()
     supabase.auth.getUser().then(async ({ data: { user } }) => {
-      setUser(user)
       if (user) {
         const { data } = await supabase.from('users').select('role').eq('id', user.id).maybeSingle()
-        setRole({ isBrand: data?.role === 'brand', isCreator: data?.role === 'creator' })
+        if (!data?.role) {
+          // Ghost session: user started OAuth but never completed role selection — sign out silently
+          await supabase.auth.signOut()
+          setUser(null)
+          setLoading(false)
+          return
+        }
+        setUser(user)
+        setRole({ isBrand: data?.role === 'brand', isCreator: data?.role === 'creator' || data?.role === 'influencer' })
       }
       setLoading(false)
     })
@@ -37,17 +48,17 @@ export function Navbar() {
       if (!session?.user) { setRole({ isBrand: false, isCreator: false }); setLoading(false) }
     })
     return () => subscription.unsubscribe()
-  }, [])
+  }, [hide])
 
   useEffect(() => {
+    if (hide) return
     const handler = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false)
     }
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
-  }, [])
+  }, [hide])
 
-  const hide = HIDE_PATHS.some(p => pathname?.startsWith(p))
   if (hide) return null
 
   async function signOut() {
@@ -61,7 +72,10 @@ export function Navbar() {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-[#EDEFEB] border-b border-[#E8E8E8]" style={{ height: 64 }}>
       <div className="max-w-[1360px] mx-auto px-5 md:px-[70px] h-full flex items-center justify-between">
-        <Link href="/" className="text-[20px] font-black text-[#163300] hover:opacity-80 transition-opacity tracking-tight">
+        <Link
+          href={role.isCreator ? '/dashboard' : role.isBrand ? '/brand/dashboard' : '/'}
+          className="text-[20px] font-black text-[#163300] hover:opacity-80 transition-opacity tracking-tight"
+        >
           GrabCollab
         </Link>
 
@@ -69,8 +83,6 @@ export function Navbar() {
           <div className="hidden md:flex items-center gap-1">
             {!user && (
               <>
-                <NavLink href="/#how-it-works" current={pathname}>How It Works</NavLink>
-                <NavLink href="/for-creators" current={pathname}>For Creators</NavLink>
               </>
             )}
           </div>
@@ -82,10 +94,10 @@ export function Navbar() {
               <Link href="/login" className="hidden sm:block text-[15px] font-semibold text-[#121511] hover:opacity-70 transition-opacity px-4 py-2">
                 Login
               </Link>
-              <Link href="/signup?role=brand" className="hidden sm:block text-[14px] font-bold text-[#163300] border-2 border-[#163300]/25 px-4 py-2 rounded-full hover:border-[#163300] transition-colors">
+              <Link href="/onboarding/brand" className="hidden sm:block text-[14px] font-bold text-[#163300] border-2 border-[#163300]/25 px-4 py-2 rounded-full hover:border-[#163300] transition-colors">
                 Join as Brand
               </Link>
-              <Link href="/signup?role=creator" className="bg-[#9FE870] text-[#163300] font-bold text-[14px] px-5 py-2.5 rounded-full hover:bg-[#8fdc60] transition-colors">
+              <Link href="/for-creators" className="bg-[#9FE870] text-[#163300] font-bold text-[14px] px-5 py-2.5 rounded-full hover:bg-[#8fdc60] transition-colors">
                 Join as Creator
               </Link>
             </>

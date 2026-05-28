@@ -10,28 +10,41 @@ export default async function CreatorDashboard() {
   const { data: creator } = await supabase.from('creator_profiles').select('*').eq('user_id', user.id).maybeSingle()
   if (!creator) redirect('/onboarding/creator')
 
-  const [{ count: appsSent }, { count: shortlisted }, { count: selected }] = await Promise.all([
+  const [{ count: appsSent }, { count: shortlisted }, { count: selected }, { count: packagesCount }] = await Promise.all([
     supabase.from('applications').select('*', { count: 'exact', head: true }).eq('creator_id', creator.id),
     supabase.from('applications').select('*', { count: 'exact', head: true }).eq('creator_id', creator.id).eq('status', 'shortlisted'),
     supabase.from('applications').select('*', { count: 'exact', head: true }).eq('creator_id', creator.id).eq('status', 'selected'),
+    supabase.from('content_packages').select('*', { count: 'exact', head: true }).eq('creator_id', creator.id),
   ])
 
-  // Profile completion
-  const fields = [creator.display_name, creator.bio, creator.profile_photo_url, creator.instagram_url, creator.niches?.length, creator.languages?.length]
-  const done = fields.filter(Boolean).length
-  const total = fields.length
-  const pct = Math.round((done / total) * 100)
-
-  const nudges = [
-    !creator.instagram_url && { label: 'Add your Instagram link', href: '/profile/edit' },
-    !creator.profile_photo_url && { label: 'Upload a profile photo', href: '/profile/edit' },
-    !creator.bio && { label: 'Write a short bio', href: '/profile/edit' },
-    !creator.niches?.length && { label: 'Select your content niches', href: '/profile/edit' },
-  ].filter(Boolean) as { label: string; href: string }[]
+  const completionItems = [
+    { label: 'Upload a profile photo', done: !!creator.profile_photo_url },
+    { label: 'Write a short bio', done: !!creator.bio },
+    { label: 'Add your city', done: !!creator.city },
+    { label: 'Add the languages you speak', done: !!(creator.languages?.length) },
+    { label: 'Add content packages with pricing', done: (packagesCount ?? 0) > 0 },
+  ]
+  const completionPct = Math.round((completionItems.filter(i => i.done).length / completionItems.length) * 100)
 
   const { data: campaigns } = await supabase.from('campaigns').select('id, title, platforms, niches, budget_inr, application_deadline').eq('status', 'open').containedBy('niches', creator.niches ?? []).limit(3)
 
-  const { data: recentMessages } = await supabase.from('conversations').select('id, last_message_at, brand_profiles(brand_name), messages(content)').eq('creator_id', creator.id).order('last_message_at', { ascending: false }).limit(3)
+  // Pending brand requests (cold outreach awaiting creator acceptance)
+  const { data: pendingRequests } = await supabase
+    .from('conversations')
+    .select('id, brand_profiles(brand_name)')
+    .eq('creator_id', creator.id)
+    .is('creator_accepted', null)
+    .eq('initiated_by', 'brand')
+    .order('created_at', { ascending: false })
+
+  // Accepted chats only — requests are shown separately
+  const { data: recentMessages } = await supabase
+    .from('conversations')
+    .select('id, last_message_at, brand_profiles(brand_name), messages(content)')
+    .eq('creator_id', creator.id)
+    .eq('creator_accepted', true)
+    .order('last_message_at', { ascending: false })
+    .limit(3)
 
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
@@ -43,21 +56,25 @@ export default async function CreatorDashboard() {
         <p className="text-[15px] text-[#6A6C6A] mt-0.5">Welcome to your creator hub.</p>
       </div>
 
-      {/* Profile completion */}
-      {pct < 100 && nudges.length > 0 && (
-        <div className="bg-white rounded-[24px] p-5 mb-6">
+      {completionPct < 100 && (
+        <div className="bg-white rounded-[20px] p-5 mb-6">
           <div className="flex items-center justify-between mb-3">
-            <p className="text-[15px] font-black text-[#121511]">Complete your profile</p>
-            <span className="text-[14px] font-bold text-[#163300]">{pct}%</span>
+            <p className="text-[14px] font-black text-[#121511]">Creators with complete profiles get up to 3× more brand enquiries.</p>
+            <Link href="/profile/edit" className="text-[12px] font-bold text-[#163300] hover:underline flex-shrink-0 ml-4">Edit profile →</Link>
           </div>
-          <div className="w-full bg-[#EDEFEB] rounded-full h-2 mb-4">
-            <div className="bg-[#163300] h-2 rounded-full transition-all" style={{ width: `${pct}%` }} />
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-[22px] font-black text-[#D97706] leading-none">{completionPct}%</span>
+            <div className="w-[160px] h-1.5 bg-[#EDEFEB] rounded-full">
+              <div className="h-1.5 bg-[#D97706] rounded-full transition-all" style={{ width: `${completionPct}%` }} />
+            </div>
+            <span className="text-[11px] font-semibold text-[#9A9C9A] uppercase tracking-wide">complete</span>
           </div>
-          <div className="space-y-2">
-            {nudges.slice(0, 3).map(n => (
-              <Link key={n.label} href={n.href} className="flex items-center gap-2 text-[13px] font-semibold text-[#163300] hover:underline">
-                <span className="w-4 h-4 rounded-full border-2 border-[#163300]/30 flex-shrink-0" />
-                {n.label}
+          <div className="flex flex-wrap gap-2">
+            {completionItems.filter(i => !i.done).map(i => (
+              <Link key={i.label} href="/profile/edit"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#E8E8E8] bg-[#FAFAFA] hover:border-[#163300]/30 hover:bg-[#EDEFEB] transition-colors text-[12px] font-semibold text-[#4A4C4A]">
+                <span className="text-[#D97706] font-bold">+</span>
+                {i.label}
               </Link>
             ))}
           </div>
@@ -71,12 +88,42 @@ export default async function CreatorDashboard() {
           { label: 'Shortlisted', value: shortlisted ?? 0, href: '/applications?filter=shortlisted' },
           { label: 'Active Projects', value: selected ?? 0, href: '/projects' },
         ].map(s => (
-          <Link key={s.label} href={s.href} className="bg-white rounded-[20px] p-5 hover:shadow-md transition-shadow">
+          <Link key={s.label} href={s.href} className="bg-white rounded-[20px] p-5 border border-transparent hover:border-[#163300] transition-colors">
             <p className="text-[36px] font-black text-[#163300]">{s.value}</p>
             <p className="text-[14px] text-[#6A6C6A] mt-1">{s.label}</p>
           </Link>
         ))}
       </div>
+
+      {/* Brand connection requests — shown prominently if any pending */}
+      {(pendingRequests?.length ?? 0) > 0 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-[20px] p-5 mb-6">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-[18px]">📩</span>
+            <h2 className="text-[16px] font-black text-amber-900">
+              {pendingRequests!.length === 1 ? '1 brand wants to connect' : `${pendingRequests!.length} brands want to connect`}
+            </h2>
+          </div>
+          <div className="space-y-2">
+            {pendingRequests!.map((r: any) => (
+              <div key={r.id} className="flex items-center justify-between gap-3 bg-white rounded-[12px] px-4 py-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-9 h-9 rounded-full bg-[#163300] flex items-center justify-center text-[#9FE870] font-black text-[13px] flex-shrink-0">
+                    {r.brand_profiles?.brand_name?.[0]?.toUpperCase() ?? '?'}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[14px] font-bold text-[#121511] truncate">{r.brand_profiles?.brand_name ?? 'Brand'}</p>
+                    <p className="text-[12px] text-amber-700">Wants to reach out to you</p>
+                  </div>
+                </div>
+                <Link href={`/messages/${r.id}`} className="flex-shrink-0 px-4 py-1.5 bg-[#163300] text-[#9FE870] text-[12px] font-bold rounded-full hover:bg-[#1f4a00] transition-colors">
+                  View Request →
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-6">
         {/* Open campaigns */}

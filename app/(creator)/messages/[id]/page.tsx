@@ -1,6 +1,7 @@
 import { redirect, notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
+import { ArrowLeft } from 'lucide-react'
 import { ChatBox } from '@/app/brand/messages/[id]/chat-box'
 import { AcceptRequest } from './accept-request'
 
@@ -27,7 +28,9 @@ export default async function CreatorChat({ params }: { params: Promise<{ id: st
   return (
     <div className="flex flex-col h-screen">
       <div className="bg-white border-b border-[#E8E8E8] px-6 py-4 flex items-center gap-4 flex-shrink-0">
-        <Link href="/messages" className="text-[#6A6C6A] hover:text-[#121511] text-[13px]">← Back</Link>
+        <Link href="/messages" className="flex items-center gap-1.5 text-[13px] text-[#6A6C6A] hover:text-[#163300] transition-colors flex-shrink-0">
+          <ArrowLeft className="w-3.5 h-3.5" /> Messages
+        </Link>
         <div className="w-10 h-10 rounded-full bg-[#163300] flex items-center justify-center text-[#9FE870] font-black text-[14px]">
           {convo.brand_profiles?.brand_name?.[0]?.toUpperCase() ?? '?'}
         </div>
