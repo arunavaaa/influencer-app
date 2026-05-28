@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { ApplyModal } from './apply-modal'
+import { CampaignActions } from './apply-modal'
 
 function daysUntil(dateStr: string | null): number | null {
   if (!dateStr) return null
@@ -23,7 +23,7 @@ export default async function BrowseCampaigns({ searchParams }: { searchParams: 
   const todayStr = new Date().toISOString().split('T')[0]
   let query = supabase
     .from('campaigns')
-    .select('*, created_at, updated_at, brand_profiles(brand_name, niche, city, logo_url)')
+    .select('*, created_at, updated_at, brand_profiles(brand_name, niche, city, logo_url, user_id)')
     .eq('status', 'open')
     .or(`application_deadline.is.null,application_deadline.gte.${todayStr}`)
   if (sp.niche) query = query.contains('niches', [sp.niche])
@@ -107,9 +107,10 @@ export default async function BrowseCampaigns({ searchParams }: { searchParams: 
                 <div className="mt-auto">
                   {applied
                     ? <div className="w-full py-2.5 bg-[#9FE870]/20 text-[#163300] text-[13px] font-bold rounded-full text-center">Applied ✓</div>
-                    : <ApplyModal
+                    : <CampaignActions
                         campaignId={c.id}
                         creatorId={creator.id}
+                        brandUserId={c.brand_profiles?.user_id ?? null}
                         campaign={{
                           title: c.title,
                           goal: c.goal,
