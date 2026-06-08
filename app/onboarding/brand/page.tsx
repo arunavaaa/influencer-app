@@ -144,7 +144,7 @@ export default function BrandOnboarding() {
       }
     }
 
-    const { error } = await supabase.from('brand_profiles').insert({
+    const { error } = await supabase.from('brand_profiles').upsert({
       user_id: user.id,
       brand_name: data.brand_name,
       website_url: data.website_url || null,
@@ -158,7 +158,7 @@ export default function BrandOnboarding() {
       other_social_links: Object.keys(otherLinks).length ? otherLinks : null,
       logo_url,
       onboarding_complete: true,
-    })
+    }, { onConflict: 'user_id' })
     if (error) { toast.error('Failed to save. Please try again.'); setSaving(false); return }
     setStep(TOTAL)
     setSaving(false)
