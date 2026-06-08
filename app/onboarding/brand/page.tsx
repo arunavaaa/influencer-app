@@ -100,6 +100,11 @@ export default function BrandOnboarding() {
     })
     if (error) { toast.error(error.message); setAcLoading(false); return }
     if (!authData.user) { toast.error('Signup failed'); setAcLoading(false); return }
+    if (!authData.session) {
+      toast.info('Check your email to verify your account, then come back to sign in.')
+      setAcLoading(false)
+      return
+    }
     await fetch('/api/set-role', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ role: 'brand' }) })
     setAuthed(true)
     setAcLoading(false)

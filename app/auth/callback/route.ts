@@ -29,12 +29,7 @@ export async function GET(request: Request) {
           await admin.from('users').upsert({ id: data.user.id, role: 'creator' })
           return NextResponse.redirect(`${origin}/onboarding/creator`)
         }
-        // Existing auth account but no users row — block and show error
-        if (!next) {
-          await supabase.auth.signOut()
-          return NextResponse.redirect(`${origin}/login?error=no_profile`)
-        }
-        // New user via login page Google button — ask them to choose their role
+        // No role set and no signup context — ask them to choose their role
         return NextResponse.redirect(`${origin}/login?step=choose-role`)
       }
 

@@ -167,7 +167,8 @@ export default function CreatorOnboarding() {
     if (!mandatoryReady) return
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
-    await fetch('/api/set-role', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ role: 'creator' }) })
+    const autoRoleRes = await fetch('/api/set-role', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ role: 'creator' }) })
+    if (!autoRoleRes.ok) return
     const { data: profile } = await supabase.from('creator_profiles').insert({
       user_id: user.id,
       username: data.username,
@@ -208,7 +209,8 @@ export default function CreatorOnboarding() {
       })
       return
     }
-    await fetch('/api/set-role', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ role: 'creator' }) })
+    const roleRes = await fetch('/api/set-role', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ role: 'creator' }) })
+    if (!roleRes.ok) { toast.error('Failed to save. Please try again.'); setSaving(false); return }
 
     let avatar_url: string | null = null
     if (avatarFile) {
