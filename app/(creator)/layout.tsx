@@ -10,7 +10,8 @@ export default async function CreatorLayout({ children }: { children: React.Reac
   if (!user) redirect('/login')
 
   const { data: role } = await supabase.from('users').select('role').eq('id', user.id).maybeSingle()
-  if (role?.role !== 'creator' && role?.role !== 'influencer') redirect('/brand/dashboard')
+  if (!role) redirect('/login')
+  if (role.role !== 'creator' && role.role !== 'influencer') redirect('/brand/dashboard')
 
   const { data: creator } = await supabase
     .from('creator_profiles')
