@@ -128,7 +128,8 @@ export default function BrandOnboarding() {
     setSaving(true)
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { toast.error('Not authenticated'); setSaving(false); return }
-    await supabase.from('users').upsert({ id: user.id, role: 'brand' })
+    // Ensure users row exists — insert ignores conflict if already set by auth callback or email signup
+    await supabase.from('users').insert({ id: user.id, role: 'brand' }).select().maybeSingle()
     const otherLinks: Record<string, string> = {}
     if (data.facebook_url) otherLinks.facebook_url = data.facebook_url
     if (data.x_url) otherLinks.x_url = data.x_url

@@ -18,9 +18,15 @@ export async function GET(request: Request) {
         .maybeSingle()
 
       if (!userData?.role) {
-        // New user via signup with role param — send straight to onboarding
-        if (next === 'brand') return NextResponse.redirect(`${origin}/onboarding/brand`)
-        if (next === 'creator') return NextResponse.redirect(`${origin}/onboarding/creator`)
+        // New user via signup with role param — create users row then send to onboarding
+        if (next === 'brand') {
+          await supabase.from('users').insert({ id: data.user.id, role: 'brand' })
+          return NextResponse.redirect(`${origin}/onboarding/brand`)
+        }
+        if (next === 'creator') {
+          await supabase.from('users').insert({ id: data.user.id, role: 'creator' })
+          return NextResponse.redirect(`${origin}/onboarding/creator`)
+        }
         // Existing auth account but no users row — block and show error
         if (!next) {
           await supabase.auth.signOut()
