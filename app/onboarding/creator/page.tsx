@@ -94,7 +94,7 @@ export default function CreatorOnboarding() {
       setAcLoading(false)
       return
     }
-    await supabase.from('users').insert({ id: authData.user.id, role: 'influencer' })
+    await fetch('/api/set-role', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ role: 'creator' }) })
     setAuthed(true)
     setAcLoading(false)
   }
@@ -167,7 +167,7 @@ export default function CreatorOnboarding() {
     if (!mandatoryReady) return
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
-    await supabase.from('users').upsert({ id: user.id, role: 'influencer' })
+    await fetch('/api/set-role', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ role: 'creator' }) })
     const { data: profile } = await supabase.from('creator_profiles').insert({
       user_id: user.id,
       username: data.username,
@@ -208,7 +208,7 @@ export default function CreatorOnboarding() {
       })
       return
     }
-    await supabase.from('users').upsert({ id: user.id, role: 'influencer' })
+    await fetch('/api/set-role', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ role: 'creator' }) })
 
     let avatar_url: string | null = null
     if (avatarFile) {

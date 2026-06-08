@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
 
 export async function GET(request: Request) {
@@ -18,13 +19,14 @@ export async function GET(request: Request) {
         .maybeSingle()
 
       if (!userData?.role) {
-        // New user via signup with role param — create users row then send to onboarding
+        // New user via signup with role param — use admin client to bypass RLS and create users row
+        const admin = createAdminClient()
         if (next === 'brand') {
-          await supabase.from('users').insert({ id: data.user.id, role: 'brand' })
+          await admin.from('users').upsert({ id: data.user.id, role: 'brand' })
           return NextResponse.redirect(`${origin}/onboarding/brand`)
         }
         if (next === 'creator') {
-          await supabase.from('users').insert({ id: data.user.id, role: 'creator' })
+          await admin.from('users').upsert({ id: data.user.id, role: 'creator' })
           return NextResponse.redirect(`${origin}/onboarding/creator`)
         }
         // Existing auth account but no users row — block and show error

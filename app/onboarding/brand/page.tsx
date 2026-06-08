@@ -100,7 +100,7 @@ export default function BrandOnboarding() {
     })
     if (error) { toast.error(error.message); setAcLoading(false); return }
     if (!authData.user) { toast.error('Signup failed'); setAcLoading(false); return }
-    await supabase.from('users').insert({ id: authData.user.id, role: 'brand' })
+    await fetch('/api/set-role', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ role: 'brand' }) })
     setAuthed(true)
     setAcLoading(false)
   }
@@ -128,8 +128,7 @@ export default function BrandOnboarding() {
     setSaving(true)
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { toast.error('Not authenticated'); setSaving(false); return }
-    // Ensure users row exists — insert ignores conflict if already set by auth callback or email signup
-    await supabase.from('users').insert({ id: user.id, role: 'brand' }).select().maybeSingle()
+    await fetch('/api/set-role', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ role: 'brand' }) })
     const otherLinks: Record<string, string> = {}
     if (data.facebook_url) otherLinks.facebook_url = data.facebook_url
     if (data.x_url) otherLinks.x_url = data.x_url
