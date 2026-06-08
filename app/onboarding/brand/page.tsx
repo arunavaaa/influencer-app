@@ -128,7 +128,8 @@ export default function BrandOnboarding() {
     setSaving(true)
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { toast.error('Not authenticated'); setSaving(false); return }
-    await fetch('/api/set-role', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ role: 'brand' }) })
+    const roleRes = await fetch('/api/set-role', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ role: 'brand' }) })
+    if (!roleRes.ok) { toast.error('Failed to save. Please try again.'); setSaving(false); return }
     const otherLinks: Record<string, string> = {}
     if (data.facebook_url) otherLinks.facebook_url = data.facebook_url
     if (data.x_url) otherLinks.x_url = data.x_url
