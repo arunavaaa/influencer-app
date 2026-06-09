@@ -21,13 +21,16 @@ export async function GET(request: Request) {
       if (!userData?.role) {
         // New user via signup with role param — use admin client to bypass RLS and create users row
         const admin = createAdminClient()
-        if (next === 'brand') {
-          await admin.from('users').upsert({ id: data.user.id, role: 'brand' })
-          return NextResponse.redirect(`${origin}/onboarding/brand`)
-        }
-        if (next === 'creator') {
-          await admin.from('users').upsert({ id: data.user.id, role: 'creator' })
-          return NextResponse.redirect(`${origin}/onboarding/creator`)
+        if (next === 'brand' || next === 'creator') {
+          const roleVal = next === 'brand' ? 'brand' : 'creator'
+          // UPDATE existing row (may have been created by auth trigger with null role)
+          const { count } = await admin.from('users').update({ role: roleVal }).eq('id', data.user.id)
+            .select('id', { count: 'exact', head: true })
+          // No row existed — INSERT it
+          if ((count ?? 0) === 0) {
+            await admin.from('users').insert({ id: data.user.id, role: roleVal })
+          }
+          return NextResponse.redirect(`${origin}/onboarding/${next}`)
         }
         // No role set and no signup context — ask them to choose their role
         return NextResponse.redirect(`${origin}/login?step=choose-role`)

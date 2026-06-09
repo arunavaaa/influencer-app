@@ -13,8 +13,21 @@ export async function POST(request: Request) {
   }
 
   const admin = createAdminClient()
-  const { error } = await admin.from('users').upsert({ id: user.id, role })
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  // Try UPDATE first (handles existing row, including rows created by auth triggers with null role)
+  const { error: updateError, count } = await admin
+    .from('users')
+    .update({ role })
+    .eq('id', user.id)
+    .select('id', { count: 'exact', head: true })
+
+  if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 })
+
+  // If no row existed, INSERT it
+  if ((count ?? 0) === 0) {
+    const { error: insertError } = await admin.from('users').insert({ id: user.id, role })
+    if (insertError) return NextResponse.json({ error: insertError.message }, { status: 500 })
+  }
 
   return NextResponse.json({ ok: true })
 }
