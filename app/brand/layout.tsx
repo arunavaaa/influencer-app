@@ -11,16 +11,18 @@ export default async function BrandLayout({ children }: { children: React.ReactN
 
   // Use brand_profiles as the source of truth — avoids dependency on users.role
   // which can be null due to a DB trigger creating the row before our code sets the role
-  const { data: brand } = await supabase
+  const { data: brand, error: brandErr } = await supabase
     .from('brand_profiles')
     .select('brand_name, logo_url')
     .eq('user_id', user.id)
     .maybeSingle()
 
+  console.log('[BRAND LAYOUT]', JSON.stringify({ userId: user.id, hasBrand: !!brand, brandErr: brandErr?.message }))
+
   if (!brand) {
-    // No brand profile — send creators home, everyone else to login
-    const { data: creator } = await supabase
+    const { data: creator, error: creatorErr } = await supabase
       .from('creator_profiles').select('id').eq('user_id', user.id).maybeSingle()
+    console.log('[BRAND LAYOUT no-brand]', JSON.stringify({ hasCreator: !!creator, creatorErr: creatorErr?.message }))
     redirect(creator ? '/dashboard' : '/onboarding/brand')
   }
 
