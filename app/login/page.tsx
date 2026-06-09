@@ -97,7 +97,8 @@ function LoginInner() {
     setChoosingRole(chosenRole)
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.push('/login'); return }
-    await supabase.from('users').insert({ id: user.id, role: chosenRole })
+    const dbRole = chosenRole === 'creator' ? 'influencer' : chosenRole
+    await fetch('/api/set-role', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ role: dbRole }) })
     if (chosenRole === 'brand') router.push('/onboarding/brand')
     else router.push('/onboarding/creator')
   }

@@ -8,24 +8,26 @@ export async function POST(request: Request) {
   if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
 
   const { role } = await request.json()
-  if (role !== 'brand' && role !== 'creator') {
+  // 'creator' is not a valid enum value — the DB uses 'influencer' for creators
+  const dbRole = role === 'creator' ? 'influencer' : role
+  if (dbRole !== 'brand' && dbRole !== 'influencer') {
     return NextResponse.json({ error: 'Invalid role' }, { status: 400 })
   }
 
   const admin = createAdminClient()
 
-  // Try UPDATE first (handles existing row, including rows created by auth triggers with null role)
-  const { error: updateError, count } = await admin
+  // UPDATE existing row (may have been created by auth trigger with null role)
+  const { data: updated, error: updateError } = await admin
     .from('users')
-    .update({ role })
+    .update({ role: dbRole })
     .eq('id', user.id)
-    .select('id', { count: 'exact', head: true })
+    .select('id')
 
   if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 })
 
-  // If no row existed, INSERT it
-  if ((count ?? 0) === 0) {
-    const { error: insertError } = await admin.from('users').insert({ id: user.id, role })
+  // No row existed — INSERT it
+  if (!updated || updated.length === 0) {
+    const { error: insertError } = await admin.from('users').insert({ id: user.id, role: dbRole })
     if (insertError) return NextResponse.json({ error: insertError.message }, { status: 500 })
   }
 

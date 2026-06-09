@@ -22,7 +22,7 @@ export async function GET(request: Request) {
         // New user via signup with role param — use admin client to bypass RLS and create users row
         const admin = createAdminClient()
         if (next === 'brand' || next === 'creator') {
-          const roleVal = next === 'brand' ? 'brand' : 'creator'
+          const roleVal = next === 'brand' ? 'brand' : 'influencer'
           // UPDATE existing row (may have been created by auth trigger with null role)
           const { count } = await admin.from('users').update({ role: roleVal }).eq('id', data.user.id)
             .select('id', { count: 'exact', head: true })
