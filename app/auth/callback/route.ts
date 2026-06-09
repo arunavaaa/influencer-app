@@ -23,11 +23,10 @@ export async function GET(request: Request) {
         const admin = createAdminClient()
         if (next === 'brand' || next === 'creator') {
           const roleVal = next === 'brand' ? 'brand' : 'influencer'
-          // UPDATE existing row (may have been created by auth trigger with null role)
-          const { count } = await admin.from('users').update({ role: roleVal }).eq('id', data.user.id)
-            .select('id', { count: 'exact', head: true })
-          // No row existed — INSERT it
-          if ((count ?? 0) === 0) {
+          // UPDATE existing row — trigger already created it with null role
+          const { data: updated } = await admin.from('users').update({ role: roleVal }).eq('id', data.user.id).select('id')
+          // No row yet (trigger hasn't fired?) — INSERT it
+          if (!updated || updated.length === 0) {
             await admin.from('users').insert({ id: data.user.id, role: roleVal })
           }
           return NextResponse.redirect(`${origin}/onboarding/${next}`)
