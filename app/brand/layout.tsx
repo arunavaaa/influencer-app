@@ -17,12 +17,9 @@ export default async function BrandLayout({ children }: { children: React.ReactN
     .eq('user_id', user.id)
     .maybeSingle()
 
-  console.log('[BRAND LAYOUT]', JSON.stringify({ userId: user.id, hasBrand: !!brand, brandErr: brandErr?.message }))
-
   if (!brand) {
-    const { data: creator, error: creatorErr } = await supabase
+    const { data: creator } = await supabase
       .from('creator_profiles').select('id').eq('user_id', user.id).maybeSingle()
-    console.log('[BRAND LAYOUT no-brand]', JSON.stringify({ hasCreator: !!creator, creatorErr: creatorErr?.message }))
     redirect(creator ? '/dashboard' : '/onboarding/brand')
   }
 

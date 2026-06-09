@@ -30,16 +30,13 @@ export function Navbar() {
     const supabase = createClient()
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (user) {
-        const { data } = await supabase.from('users').select('role').eq('id', user.id).maybeSingle()
-        if (!data?.role) {
-          // Ghost session: user started OAuth but never completed role selection — sign out silently
-          await supabase.auth.signOut()
-          setUser(null)
-          setLoading(false)
-          return
-        }
+        // Use profiles as source of truth — users.role can be null due to DB trigger
+        const [{ data: brandProfile }, { data: creatorProfile }] = await Promise.all([
+          supabase.from('brand_profiles').select('id').eq('user_id', user.id).maybeSingle(),
+          supabase.from('creator_profiles').select('id').eq('user_id', user.id).maybeSingle(),
+        ])
         setUser(user)
-        setRole({ isBrand: data?.role === 'brand', isCreator: data?.role === 'creator' || data?.role === 'influencer' })
+        setRole({ isBrand: !!brandProfile, isCreator: !!creatorProfile })
       }
       setLoading(false)
     })
