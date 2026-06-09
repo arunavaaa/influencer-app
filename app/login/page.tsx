@@ -68,23 +68,14 @@ function LoginInner() {
     }
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.push('/'); return }
-    const { data } = await supabase.from('users').select('role').eq('id', user.id).maybeSingle()
-    if (!data) {
-      await supabase.auth.signOut()
-      setLoginError('no_profile')
-      setLoading(false)
-      return
-    }
-    if (data.role === 'brand') {
+    // Use profiles as source of truth — users.role can be null due to DB trigger
+    const [{ data: brandProfile }, { data: creatorProfile }] = await Promise.all([
+      supabase.from('brand_profiles').select('id').eq('user_id', user.id).maybeSingle(),
+      supabase.from('creator_profiles').select('id').eq('user_id', user.id).maybeSingle(),
+    ])
+    if (brandProfile) {
       router.push('/brand/dashboard')
-    } else if (data.role === 'creator' || data.role === 'influencer') {
-      const { data: profile } = await supabase.from('creator_profiles').select('id').eq('user_id', user.id).maybeSingle()
-      if (!profile) {
-        await supabase.auth.signOut()
-        setLoginError('no_profile')
-        setLoading(false)
-        return
-      }
+    } else if (creatorProfile) {
       router.push('/dashboard')
     } else {
       await supabase.auth.signOut()

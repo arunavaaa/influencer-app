@@ -9,29 +9,29 @@ export default async function CreatorLayout({ children }: { children: React.Reac
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: role } = await supabase.from('users').select('role').eq('id', user.id).maybeSingle()
-  if (!role?.role) redirect('/login')
-  if (role.role !== 'creator' && role.role !== 'influencer') redirect('/brand/dashboard')
-
+  // Use creator_profiles as the source of truth — avoids dependency on users.role
   const { data: creator } = await supabase
     .from('creator_profiles')
     .select('id, display_name, profile_photo_url')
     .eq('user_id', user.id)
     .maybeSingle()
 
-  // Badge counts for sidenav
+  if (!creator) {
+    // No creator profile — send brands home, everyone else to onboarding
+    const { data: brand } = await supabase
+      .from('brand_profiles').select('id').eq('user_id', user.id).maybeSingle()
+    redirect(brand ? '/brand/dashboard' : '/onboarding/creator')
+  }
+
   const [pendingResult, notifsResult, msgNotifsResult] = await Promise.all([
-    // Pending brand connection requests (cold outreach awaiting creator acceptance)
     supabase.from('conversations').select('*', { count: 'exact', head: true })
-      .eq('creator_id', creator?.id ?? '')
+      .eq('creator_id', creator.id)
       .is('creator_accepted', null)
       .eq('initiated_by', 'brand'),
-    // Unread application status notifications (shortlisted / selected / rejected)
     supabase.from('notifications').select('*', { count: 'exact', head: true })
       .eq('user_id', user.id)
       .eq('read', false)
       .in('type', ['shortlisted', 'selected', 'rejected']),
-    // Unread message notifications — fetch links to deduplicate by conversation
     supabase.from('notifications').select('link')
       .eq('user_id', user.id)
       .eq('type', 'new_message')
@@ -39,7 +39,6 @@ export default async function CreatorLayout({ children }: { children: React.Reac
   ])
   const pendingRequestsCount = pendingResult.count ?? 0
   const unreadNotifsCount = notifsResult.count ?? 0
-  // Count unique conversations with unread messages (1 per chat, not 1 per message)
   const unreadMsgConvosCount = new Set((msgNotifsResult.data ?? []).map((n: { link: string }) => n.link)).size
 
   return (
@@ -54,8 +53,8 @@ export default async function CreatorLayout({ children }: { children: React.Reac
           unreadMsgConvosCount={unreadMsgConvosCount}
         />
         <SidebarProfileMenu
-          displayName={creator?.display_name ?? 'Creator'}
-          avatarUrl={creator?.profile_photo_url ?? null}
+          displayName={creator.display_name ?? 'Creator'}
+          avatarUrl={creator.profile_photo_url ?? null}
         />
       </aside>
       <main className="flex-1 overflow-y-auto">{children}</main>

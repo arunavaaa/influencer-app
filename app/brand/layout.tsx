@@ -9,17 +9,21 @@ export default async function BrandLayout({ children }: { children: React.ReactN
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: role } = await supabase.from('users').select('role').eq('id', user.id).maybeSingle()
-  if (!role?.role) redirect('/login')
-  if (role.role !== 'brand') redirect('/dashboard')
-
+  // Use brand_profiles as the source of truth — avoids dependency on users.role
+  // which can be null due to a DB trigger creating the row before our code sets the role
   const { data: brand } = await supabase
     .from('brand_profiles')
     .select('brand_name, logo_url')
     .eq('user_id', user.id)
     .maybeSingle()
 
-  // Unread notifications for brand — count unique conversations, not individual messages
+  if (!brand) {
+    // No brand profile — send creators home, everyone else to login
+    const { data: creator } = await supabase
+      .from('creator_profiles').select('id').eq('user_id', user.id).maybeSingle()
+    redirect(creator ? '/dashboard' : '/onboarding/brand')
+  }
+
   const [msgNotifsResult, { count: newAppsCount }] = await Promise.all([
     supabase.from('notifications').select('link')
       .eq('user_id', user.id).eq('type', 'new_message').eq('read', false),
@@ -36,8 +40,8 @@ export default async function BrandLayout({ children }: { children: React.ReactN
         </div>
         <BrandSideNav unreadMessagesCount={unreadMessagesCount ?? 0} newAppsCount={newAppsCount ?? 0} />
         <BrandSidebarProfileMenu
-          brandName={brand?.brand_name ?? 'Brand'}
-          logoUrl={brand?.logo_url ?? null}
+          brandName={brand.brand_name ?? 'Brand'}
+          logoUrl={brand.logo_url ?? null}
         />
       </aside>
       <main className="flex-1 overflow-y-auto">{children}</main>
