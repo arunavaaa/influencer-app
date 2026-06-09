@@ -10,7 +10,7 @@ export default async function BrandLayout({ children }: { children: React.ReactN
   if (!user) redirect('/login')
 
   const { data: role } = await supabase.from('users').select('role').eq('id', user.id).maybeSingle()
-  if (!role) redirect('/login')
+  if (!role?.role) redirect('/login')
   if (role.role !== 'brand') redirect('/dashboard')
 
   const { data: brand } = await supabase
