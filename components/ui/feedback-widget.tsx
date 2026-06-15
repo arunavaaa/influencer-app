@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { usePathname } from 'next/navigation'
 import { MessageSquare, X, Loader2, CheckCircle2 } from 'lucide-react'
 
 const TYPES = [
@@ -20,6 +21,7 @@ const PLACEHOLDERS: Record<FeedbackType, string> = {
 }
 
 export function FeedbackWidget() {
+  const pathname = usePathname()
   const [open, setOpen]       = useState(false)
   const [type, setType]       = useState<FeedbackType>('general')
   const [message, setMessage] = useState('')
@@ -49,17 +51,22 @@ export function FeedbackWidget() {
     }
   }
 
+  // Hide floating button on individual message/chat pages — it overlaps the input
+  const isOnChatPage = /^\/(brand\/)?messages\/.+/.test(pathname)
+
   return (
     <>
       {/* Floating pill button */}
-      <button
-        onClick={() => setOpen(true)}
-        aria-label="Share feedback"
-        className="fixed bottom-5 right-5 z-50 flex items-center gap-2 bg-[#163300] text-[#9FE870] px-4 py-2.5 rounded-full shadow-lg hover:bg-[#1f4a00] active:scale-95 transition-all text-[13px] font-bold select-none"
-      >
-        <MessageSquare className="w-4 h-4 flex-shrink-0" />
-        Feedback
-      </button>
+      {!isOnChatPage && (
+        <button
+          onClick={() => setOpen(true)}
+          aria-label="Share feedback"
+          className="fixed bottom-5 right-5 z-50 flex items-center gap-2 bg-[#163300] text-[#9FE870] px-4 py-2.5 rounded-full shadow-lg hover:bg-[#1f4a00] active:scale-95 transition-all text-[13px] font-bold select-none"
+        >
+          <MessageSquare className="w-4 h-4 flex-shrink-0" />
+          Feedback
+        </button>
+      )}
 
       {/* Modal */}
       {open && (
