@@ -112,8 +112,12 @@ export default async function Applications({ searchParams }: { searchParams: Pro
                         : c?.brand_profiles?.brand_name?.[0]?.toUpperCase() ?? '?'}
                     </div>
                     <div>
-                      <p className="text-[12px] text-[#6A6C6A] font-medium">{c?.brand_profiles?.brand_name}</p>
-                      <p className="text-[17px] font-black text-[#121511]">{c?.title}</p>
+                      <p className="text-[12px] text-[#6A6C6A] font-medium">
+                        {c?.brand_profiles?.brand_name ?? <span className="italic">Brand unavailable</span>}
+                      </p>
+                      <p className="text-[17px] font-black text-[#121511]">
+                        {c?.title ?? <span className="font-semibold text-[#9A9C9A]">Campaign no longer available</span>}
+                      </p>
                     </div>
                   </div>
                   <span className={`px-3 py-1 rounded-full text-[12px] font-bold capitalize flex-shrink-0 ${cfg.color}`}>{app.status}</span>
@@ -126,55 +130,77 @@ export default async function Applications({ searchParams }: { searchParams: Pro
                   </div>
                 )}
 
-                {/* Campaign goal */}
-                {c?.goal && (
-                  <div className="mb-4">
-                    <p className="text-[11px] font-bold uppercase tracking-widest text-[#9A9C9A] mb-1">Campaign Brief</p>
-                    <CampaignBriefModal brief={c.goal} />
-                  </div>
-                )}
-
-                {/* Platforms + formats + niches */}
-                {((c?.platforms?.length ?? 0) > 0 || (c?.deliverable_formats?.length ?? 0) > 0 || (c?.niches?.length ?? 0) > 0) && (
-                  <div className="flex flex-wrap gap-1.5 mb-4">
-                    {c?.platforms?.map((p: string) => (
-                      <span key={p} className="text-[11px] px-2.5 py-1 bg-[#EDEFEB] text-[#163300] rounded-full font-semibold">{p}</span>
-                    ))}
-                    {c?.deliverable_formats?.map((f: string) => (
-                      <span key={f} className="text-[11px] px-2.5 py-1 bg-[#F0EDFF] text-[#5B3FD9] rounded-full font-semibold">{f}</span>
-                    ))}
-                    {c?.niches?.map((n: string) => (
-                      <span key={n} className="text-[11px] px-2.5 py-1 bg-blue-50 text-blue-700 rounded-full font-semibold">{n}</span>
-                    ))}
-                  </div>
-                )}
-
-                {/* Money row */}
-                <div className="grid grid-cols-2 gap-3 mb-4">
-                  {c?.budget_inr && (
-                    <div className="bg-[#F9F9F9] rounded-[12px] px-3 py-2.5">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-[#9A9C9A] mb-0.5">Brand's Budget</p>
-                      <p className="text-[16px] font-black text-[#163300]">₹{c.budget_inr.toLocaleString('en-IN')}</p>
+                {/* If campaign was deleted, show what we still know from the application row */}
+                {!c ? (
+                  <>
+                    <div className="bg-[#F9F9F9] rounded-[10px] px-3 py-2.5 mb-4">
+                      <p className="text-[12px] text-[#9A9C9A]">Campaign details are no longer available.</p>
                     </div>
-                  )}
-                  {app.proposed_rate_inr && (
-                    <div className="bg-[#F9F9F9] rounded-[12px] px-3 py-2.5">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-[#9A9C9A] mb-0.5">Your Proposed Rate</p>
-                      <p className="text-[16px] font-black text-[#121511]">₹{app.proposed_rate_inr.toLocaleString('en-IN')}</p>
+                    {app.proposed_rate_inr && (
+                      <div className="grid grid-cols-2 gap-3 mb-4">
+                        <div className="bg-[#F9F9F9] rounded-[12px] px-3 py-2.5">
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-[#9A9C9A] mb-0.5">Your Proposed Rate</p>
+                          <p className="text-[16px] font-black text-[#121511]">₹{app.proposed_rate_inr.toLocaleString('en-IN')}</p>
+                        </div>
+                      </div>
+                    )}
+                    <div className="text-[12px] text-[#6A6C6A] mb-4">
+                      <span>Applied on <strong className="text-[#121511]">{fmtDate(app.created_at)}</strong></span>
                     </div>
-                  )}
-                </div>
+                  </>
+                ) : (
+                  <>
+                    {/* Campaign goal */}
+                    {c.goal && (
+                      <div className="mb-4">
+                        <p className="text-[11px] font-bold uppercase tracking-widest text-[#9A9C9A] mb-1">Campaign Brief</p>
+                        <CampaignBriefModal brief={c.goal} />
+                      </div>
+                    )}
 
-                {/* Dates row */}
-                <div className="flex flex-wrap gap-x-6 gap-y-2 mb-4 text-[12px] text-[#6A6C6A]">
-                  <span>Applied on <strong className="text-[#121511]">{fmtDate(app.created_at)}</strong></span>
-                  {c?.application_deadline && (
-                    <span>Apply by <strong className="text-[#121511]">{fmtDate(c.application_deadline)}</strong></span>
-                  )}
-                  {c?.content_deadline && (
-                    <span>Content due <strong className="text-[#121511]">{fmtDate(c.content_deadline)}</strong></span>
-                  )}
-                </div>
+                    {/* Platforms + formats + niches */}
+                    {((c.platforms?.length ?? 0) > 0 || (c.deliverable_formats?.length ?? 0) > 0 || (c.niches?.length ?? 0) > 0) && (
+                      <div className="flex flex-wrap gap-1.5 mb-4">
+                        {c.platforms?.map((p: string) => (
+                          <span key={p} className="text-[11px] px-2.5 py-1 bg-[#EDEFEB] text-[#163300] rounded-full font-semibold">{p}</span>
+                        ))}
+                        {c.deliverable_formats?.map((f: string) => (
+                          <span key={f} className="text-[11px] px-2.5 py-1 bg-[#F0EDFF] text-[#5B3FD9] rounded-full font-semibold">{f}</span>
+                        ))}
+                        {c.niches?.map((n: string) => (
+                          <span key={n} className="text-[11px] px-2.5 py-1 bg-blue-50 text-blue-700 rounded-full font-semibold">{n}</span>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Money row */}
+                    <div className="grid grid-cols-2 gap-3 mb-4">
+                      {c.budget_inr && (
+                        <div className="bg-[#F9F9F9] rounded-[12px] px-3 py-2.5">
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-[#9A9C9A] mb-0.5">Brand's Budget</p>
+                          <p className="text-[16px] font-black text-[#163300]">₹{c.budget_inr.toLocaleString('en-IN')}</p>
+                        </div>
+                      )}
+                      {app.proposed_rate_inr && (
+                        <div className="bg-[#F9F9F9] rounded-[12px] px-3 py-2.5">
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-[#9A9C9A] mb-0.5">Your Proposed Rate</p>
+                          <p className="text-[16px] font-black text-[#121511]">₹{app.proposed_rate_inr.toLocaleString('en-IN')}</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Dates row */}
+                    <div className="flex flex-wrap gap-x-6 gap-y-2 mb-4 text-[12px] text-[#6A6C6A]">
+                      <span>Applied on <strong className="text-[#121511]">{fmtDate(app.created_at)}</strong></span>
+                      {c.application_deadline && (
+                        <span>Apply by <strong className="text-[#121511]">{fmtDate(c.application_deadline)}</strong></span>
+                      )}
+                      {c.content_deadline && (
+                        <span>Content due <strong className="text-[#121511]">{fmtDate(c.content_deadline)}</strong></span>
+                      )}
+                    </div>
+                  </>
+                )}
 
                 {/* Message button */}
                 {brandId && (
