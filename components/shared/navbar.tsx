@@ -126,7 +126,7 @@ export function Navbar() {
                     </>
                   )}
                   <div className="border-t border-[#E8E8E8]">
-                    <button onClick={signOut} className="w-full text-left px-4 py-3 text-[15px] text-red-600 hover:bg-[#E8EAE6] transition-colors">
+                    <button onClick={signOut} className="w-full text-left px-4 py-3 text-[15px] text-red-600 hover:bg-gray-100 transition-colors">
                       Sign Out
                     </button>
                   </div>
@@ -152,7 +152,7 @@ function NavLink({ href, current, children }: { href: string; current: string | 
 
 function DropdownItem({ href, label }: { href: string; label: string }) {
   return (
-    <Link href={href} className="block px-4 py-3 text-[15px] text-[#121511] hover:bg-[#E8EAE6] transition-colors">
+    <Link href={href} className="block px-4 py-3 text-[15px] text-[#121511] hover:bg-gray-100 transition-colors">
       {label}
     </Link>
   )

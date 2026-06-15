@@ -62,7 +62,7 @@ export default async function CreatorMessages() {
           <div className="bg-white rounded-[24px] overflow-hidden">
             {chats.map((c: any, i: number) => (
               <Link key={c.id} href={`/messages/${c.id}`}
-                className={`flex items-center gap-4 px-5 py-4 hover:bg-[#E8EAE6] transition-colors ${i > 0 ? 'border-t border-[#F0F0F0]' : ''}`}>
+                className={`flex items-center gap-4 px-5 py-4 hover:bg-gray-100 transition-colors ${i > 0 ? 'border-t border-[#F0F0F0]' : ''}`}>
                 <div className="w-12 h-12 rounded-full bg-[#163300] flex items-center justify-center text-[#9FE870] font-black text-[16px] flex-shrink-0 overflow-hidden">
                   {c.brand_profiles?.logo_url
                     ? <img src={c.brand_profiles.logo_url} alt={c.brand_profiles.brand_name ?? ''} className="w-full h-full object-cover" />

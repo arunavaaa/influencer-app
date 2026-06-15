@@ -141,7 +141,7 @@ function Filters() {
             <DropdownPanel>
               {FOLLOWER_OPTIONS.map(({ label, value }) => (
                 <div key={label} onClick={() => { setFollowers(value); setOpen(null) }}
-                  className={`flex items-center gap-2.5 px-3 py-2 mx-1 rounded-[8px] cursor-pointer hover:bg-[#E8EAE6] transition-colors`}>
+                  className={`flex items-center gap-2.5 px-3 py-2 mx-1 rounded-[8px] cursor-pointer hover:bg-gray-100 transition-colors`}>
                   <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all ${followers === value ? 'border-[#163300] bg-[#163300]' : 'border-[#D0D0D0]'}`}>
                     {followers === value && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                   </div>
@@ -194,7 +194,7 @@ function DropdownPanel({ children }: { children: React.ReactNode }) {
 function CheckItem({ label, checked, onToggle }: { label: string; checked: boolean; onToggle: () => void }) {
   return (
     <div onClick={onToggle}
-      className="flex items-center gap-2.5 px-3 py-2 mx-1 rounded-[8px] cursor-pointer hover:bg-[#E8EAE6] transition-colors">
+      className="flex items-center gap-2.5 px-3 py-2 mx-1 rounded-[8px] cursor-pointer hover:bg-gray-100 transition-colors">
       <div className={`w-4 h-4 rounded-[4px] border-2 flex-shrink-0 flex items-center justify-center transition-all ${checked ? 'border-[#163300] bg-[#163300]' : 'border-[#D0D0D0]'}`}>
         {checked && <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />}
       </div>
