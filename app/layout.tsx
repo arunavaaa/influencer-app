@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { Navbar } from "@/components/shared/navbar";
+import NextTopLoader from "nextjs-toploader";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -25,6 +26,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} h-full antialiased`}>
 <body className="h-full flex flex-col bg-white text-[#121511]" style={{ fontFamily: 'var(--font-inter), Inter, Arial, sans-serif' }}>
+        <NextTopLoader color="#9FE870" shadow={false} height={3} showSpinner={false} />
         <Navbar />
         <main className="flex-1 flex flex-col pt-16">{children}</main>
         <Toaster richColors closeButton position="top-right" />

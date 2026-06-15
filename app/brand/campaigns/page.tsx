@@ -2,6 +2,8 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { AutoRefresh } from '@/components/ui/auto-refresh'
+import { FilterTabs } from '@/components/ui/filter-tabs'
+import { Skeleton } from '@/components/ui/skeleton'
 
 const STATUS_BADGE: Record<string, string> = {
   open: 'bg-[#9FE870]/20 text-[#163300]',
@@ -100,15 +102,41 @@ export default async function BrandCampaigns({ searchParams }: { searchParams: P
         </Link>
       </div>
 
-      {/* Filter tabs */}
-      <div className="flex gap-2 mb-6 bg-white rounded-[14px] p-1 w-fit">
-        {['all', 'open', 'draft', 'closed'].map(f => (
-          <Link key={f} href={`/brand/campaigns?filter=${f}`}
-            className={`px-4 py-2 rounded-[10px] text-[14px] font-semibold capitalize transition-colors ${filter === f ? 'bg-[#EDEFEB] text-[#163300] font-bold' : 'text-[#6A6C6A] hover:text-[#121511]'}`}>
-            {f}
-          </Link>
-        ))}
-      </div>
+      <FilterTabs
+        tabs={[
+          { value: 'all', label: 'All' },
+          { value: 'open', label: 'Open' },
+          { value: 'draft', label: 'Draft' },
+          { value: 'closed', label: 'Closed' },
+        ]}
+        skeleton={
+          <div className="space-y-4">
+            {[0, 1, 2].map(i => (
+              <div key={i} className="bg-white rounded-[20px] p-5">
+                <div className="flex items-start justify-between gap-4 mb-3">
+                  <Skeleton className="h-5 w-2/3" />
+                  <div className="flex gap-2">
+                    <Skeleton className="h-8 w-16 rounded-full" />
+                    <Skeleton className="h-8 w-28 rounded-full" />
+                  </div>
+                </div>
+                <div className="flex gap-2 mb-4">
+                  <Skeleton className="h-6 w-20 rounded-full" />
+                  <Skeleton className="h-6 w-20 rounded-full" />
+                </div>
+                <div className="grid grid-cols-4 gap-4 pt-4 border-t border-[#F0F0F0]">
+                  {[0, 1, 2, 3].map(j => (
+                    <div key={j}>
+                      <Skeleton className="h-2.5 w-12 mb-2" />
+                      <Skeleton className="h-5 w-16" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        }
+      >
 
       {!campaigns?.length ? (
         <div className="bg-white rounded-[24px] p-16 text-center">
@@ -224,6 +252,7 @@ export default async function BrandCampaigns({ searchParams }: { searchParams: P
           })}
         </div>
       )}
+      </FilterTabs>
     </div>
   )
 }

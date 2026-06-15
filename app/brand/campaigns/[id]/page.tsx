@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { ArrowLeft, Pencil } from 'lucide-react'
 import { ApplicationsPanel } from './applications-panel'
 import { GoalText } from './goal-text'
+import { FilterTabs } from '@/components/ui/filter-tabs'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export default async function CampaignDetail({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ filter?: string }> }) {
   const { id } = await params
@@ -168,30 +170,46 @@ export default async function CampaignDetail({ params, searchParams }: { params:
           <span className="text-[14px] font-semibold text-[#6A6C6A]">{counts.all} total</span>
         </div>
 
-        {/* Filter tabs */}
-        <div className="flex gap-2 mb-5 flex-wrap">
-          {(['all', 'pending', 'shortlisted', 'selected', 'rejected'] as const).map(f => (
-            <Link
-              key={f}
-              href={`/brand/campaigns/${id}?filter=${f}`}
-              className={`px-4 py-1.5 rounded-full text-[13px] font-semibold capitalize transition-colors ${filter === f ? 'bg-[#163300] text-[#9FE870] font-bold' : 'bg-[#EDEFEB] text-[#6A6C6A] hover:text-[#121511]'}`}
-            >
-              {f}{counts[f] > 0 ? ` (${counts[f]})` : ''}
-            </Link>
-          ))}
-        </div>
+        <FilterTabs
+          variant="pills"
+          tabs={[
+            { value: 'all',        label: `All${counts.all > 0 ? ` (${counts.all})` : ''}` },
+            { value: 'pending',    label: `Pending${counts.pending > 0 ? ` (${counts.pending})` : ''}` },
+            { value: 'shortlisted',label: `Shortlisted${counts.shortlisted > 0 ? ` (${counts.shortlisted})` : ''}` },
+            { value: 'selected',   label: `Selected${counts.selected > 0 ? ` (${counts.selected})` : ''}` },
+            { value: 'rejected',   label: `Rejected${counts.rejected > 0 ? ` (${counts.rejected})` : ''}` },
+          ]}
+          skeleton={
+            <div className="space-y-3">
+              {[0, 1, 2].map(i => (
+                <div key={i} className="border border-[#E8E8E8] rounded-[16px] p-4">
+                  <div className="flex items-center gap-3 mb-3">
+                    <Skeleton className="w-10 h-10 rounded-full flex-shrink-0" />
+                    <div className="flex-1">
+                      <Skeleton className="h-4 w-32 mb-1.5" />
+                      <Skeleton className="h-3 w-20" />
+                    </div>
+                    <Skeleton className="h-8 w-28 rounded-full" />
+                  </div>
+                  <Skeleton className="h-3 w-full mb-1.5" />
+                  <Skeleton className="h-3 w-3/4" />
+                </div>
+              ))}
+            </div>
+          }
+        >
+          {/* Hint text */}
+          {(applications?.length ?? 0) > 0 && (
+            <p className="text-[12px] text-[#9A9C9A] mb-4">Click "Review Application" to read the full cover note and take action.</p>
+          )}
 
-        {/* Hint text — only when there are applications to act on */}
-        {(applications?.length ?? 0) > 0 && (
-          <p className="text-[12px] text-[#9A9C9A] mb-4">Click "Review Application" to read the full cover note and take action.</p>
-        )}
-
-        <ApplicationsPanel
-          key={filter}
-          applications={(applications ?? []) as any}
-          campaignId={id}
-          brandId={brand.id}
-        />
+          <ApplicationsPanel
+            key={filter}
+            applications={(applications ?? []) as any}
+            campaignId={id}
+            brandId={brand.id}
+          />
+        </FilterTabs>
       </div>
     </div>
   )

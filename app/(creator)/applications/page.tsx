@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { MessageBrandButton } from './message-brand-button'
 import { CampaignBriefModal } from './campaign-brief-modal'
 import { AutoRefresh } from '@/components/ui/auto-refresh'
+import { FilterTabs } from '@/components/ui/filter-tabs'
+import { Skeleton } from '@/components/ui/skeleton'
 
 const STATUS_CONFIG = {
   pending:    { color: 'bg-[#F5F5F5] text-[#6A6C6A]',        msg: '' },
@@ -45,14 +47,44 @@ export default async function Applications({ searchParams }: { searchParams: Pro
       <AutoRefresh />
       <h1 className="text-[28px] font-black text-[#121511] mb-6">My Applications</h1>
 
-      <div className="flex gap-2 mb-6 bg-white rounded-[14px] p-1 w-fit flex-wrap">
-        {['all', 'pending', 'shortlisted', 'selected', 'rejected'].map(f => (
-          <Link key={f} href={`/applications?filter=${f}`}
-            className={`px-4 py-2 rounded-[10px] text-[13px] font-semibold capitalize transition-colors ${filter === f ? 'bg-[#EDEFEB] text-[#163300] font-bold' : 'text-[#6A6C6A] hover:text-[#121511]'}`}>
-            {f}
-          </Link>
-        ))}
-      </div>
+      <FilterTabs
+        tabs={[
+          { value: 'all', label: 'All' },
+          { value: 'pending', label: 'Pending' },
+          { value: 'shortlisted', label: 'Shortlisted' },
+          { value: 'selected', label: 'Selected' },
+          { value: 'rejected', label: 'Rejected' },
+        ]}
+        skeleton={
+          <div className="space-y-4">
+            {[0, 1, 2].map(i => (
+              <div key={i} className="bg-white rounded-[20px] p-5">
+                <div className="flex items-start justify-between gap-4 mb-4">
+                  <div className="flex items-start gap-3">
+                    <Skeleton className="w-10 h-10 rounded-[10px] flex-shrink-0" />
+                    <div>
+                      <Skeleton className="h-3 w-20 mb-1.5" />
+                      <Skeleton className="h-5 w-48" />
+                    </div>
+                  </div>
+                  <Skeleton className="h-6 w-20 rounded-full flex-shrink-0" />
+                </div>
+                <Skeleton className="h-4 w-full mb-2" />
+                <Skeleton className="h-4 w-3/4 mb-4" />
+                <div className="flex gap-2 mb-4">
+                  <Skeleton className="h-6 w-20 rounded-full" />
+                  <Skeleton className="h-6 w-16 rounded-full" />
+                </div>
+                <div className="grid grid-cols-2 gap-3 mb-4">
+                  <Skeleton className="h-14 rounded-[12px]" />
+                  <Skeleton className="h-14 rounded-[12px]" />
+                </div>
+                <Skeleton className="h-3 w-64" />
+              </div>
+            ))}
+          </div>
+        }
+      >
 
       {!applications?.length ? (
         <div className="bg-white rounded-[24px] p-16 text-center">
@@ -216,6 +248,7 @@ export default async function Applications({ searchParams }: { searchParams: Pro
           })}
         </div>
       )}
+      </FilterTabs>
     </div>
   )
 }
