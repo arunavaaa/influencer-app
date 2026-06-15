@@ -109,7 +109,7 @@ export default async function BrandDashboard() {
           <div className="flex flex-wrap gap-2">
             {completionItems.filter(i => !i.done).map(i => (
               <Link key={i.label} href="/brand/profile"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#E8E8E8] bg-[#FAFAFA] hover:border-[#163300]/30 hover:bg-[#EDEFEB] transition-colors text-[12px] font-semibold text-[#4A4C4A]">
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#E8E8E8] bg-[#FAFAFA] hover:border-[#163300]/30 hover:bg-[#E8EAE6] transition-colors text-[12px] font-semibold text-[#4A4C4A]">
                 <span className="text-[#D97706] font-bold">+</span>
                 {i.label}
               </Link>
@@ -135,7 +135,7 @@ export default async function BrandDashboard() {
           ) : (
             <div className="space-y-3">
               {recentApps.map((app: any) => (
-                <div key={app.id} className="flex items-center gap-3 p-3 rounded-[14px] hover:bg-[#EDEFEB] transition-colors">
+                <div key={app.id} className="flex items-center gap-3 p-3 rounded-[14px] hover:bg-[#E8EAE6] transition-colors">
                   <div className="w-10 h-10 rounded-full bg-[#163300] flex items-center justify-center text-[#9FE870] font-black text-[14px] flex-shrink-0 overflow-hidden">
                     {app.creator_profiles?.profile_photo_url
                       ? <img src={app.creator_profiles.profile_photo_url} alt={app.creator_profiles.display_name ?? ''} className="w-full h-full object-cover" />
@@ -175,7 +175,7 @@ export default async function BrandDashboard() {
           ) : (
             <div className="space-y-3">
               {recentConvos.map((c: any) => (
-                <Link key={c.id} href={`/brand/messages/${c.id}`} className="flex items-center gap-3 p-3 rounded-[14px] hover:bg-[#EDEFEB] transition-colors">
+                <Link key={c.id} href={`/brand/messages/${c.id}`} className="flex items-center gap-3 p-3 rounded-[14px] hover:bg-[#E8EAE6] transition-colors">
                   <div className="w-10 h-10 rounded-full bg-[#163300] flex items-center justify-center text-[#9FE870] font-black text-[14px] flex-shrink-0 overflow-hidden">
                     {c.creator_profiles?.profile_photo_url
                       ? <img src={c.creator_profiles.profile_photo_url} alt={c.creator_profiles.display_name ?? ''} className="w-full h-full object-cover" />

@@ -117,7 +117,7 @@ export function NotificationsPanel({ open, onClose, onUnreadChange }: Props) {
             )}
             <button
               onClick={onClose}
-              className="p-2 hover:bg-[#EDEFEB] rounded-full transition-colors ml-2"
+              className="p-2 hover:bg-[#E8EAE6] rounded-full transition-colors ml-2"
             >
               <X className="w-5 h-5 text-[#6A6C6A]" />
             </button>
@@ -148,7 +148,7 @@ export function NotificationsPanel({ open, onClose, onUnreadChange }: Props) {
                   <button
                     key={n.id}
                     onClick={() => markRead(n.id)}
-                    className={`w-full flex items-start gap-4 px-6 py-4 border-b border-[#E8E8E8] hover:bg-[#EDEFEB]/50 transition-colors text-left ${
+                    className={`w-full flex items-start gap-4 px-6 py-4 border-b border-[#E8E8E8] hover:bg-[#E8EAE6] transition-colors text-left ${
                       !n.read ? 'bg-[#9FE870]/5' : ''
                     }`}
                   >

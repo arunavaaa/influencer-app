@@ -34,7 +34,7 @@ export default async function BrandMessages() {
             const declined = c.creator_accepted === false
             return (
               <Link key={c.id} href={`/brand/messages/${c.id}`}
-                className={`flex items-center gap-4 px-5 py-4 hover:bg-[#EDEFEB] transition-colors ${i > 0 ? 'border-t border-[#F0F0F0]' : ''}`}>
+                className={`flex items-center gap-4 px-5 py-4 hover:bg-[#E8EAE6] transition-colors ${i > 0 ? 'border-t border-[#F0F0F0]' : ''}`}>
                 <div className="w-12 h-12 rounded-full bg-[#163300] flex items-center justify-center text-[#9FE870] font-black text-[16px] flex-shrink-0 overflow-hidden">
                   {c.creator_profiles?.profile_photo_url
                     ? <img src={c.creator_profiles.profile_photo_url} alt={c.creator_profiles.display_name ?? ''} className="w-full h-full object-cover" />
