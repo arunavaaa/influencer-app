@@ -24,8 +24,9 @@ function fmtDate(d: string | null) {
 }
 
 // ── Campaign Details modal (read-only) ──────────────────────────────────────
-function CampaignDetailModal({ campaign, onApply, onClose }: {
+function CampaignDetailModal({ campaign, applied, onApply, onClose }: {
   campaign: Campaign
+  applied: boolean
   onApply: () => void
   onClose: () => void
 }) {
@@ -128,12 +129,18 @@ function CampaignDetailModal({ campaign, onApply, onClose }: {
           >
             Close
           </button>
-          <button
-            onClick={onApply}
-            className="flex-1 py-3 bg-[#163300] text-[#9FE870] font-bold text-[14px] rounded-full hover:bg-[#1f4a00] transition-colors"
-          >
-            Apply to Campaign →
-          </button>
+          {applied ? (
+            <div className="flex-1 py-3 bg-[#9FE870]/20 text-[#163300] font-bold text-[14px] rounded-full text-center">
+              Applied ✓
+            </div>
+          ) : (
+            <button
+              onClick={onApply}
+              className="flex-1 py-3 bg-[#163300] text-[#9FE870] font-bold text-[14px] rounded-full hover:bg-[#1f4a00] transition-colors"
+            >
+              Apply to Campaign →
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -280,6 +287,7 @@ export function CampaignActions({ campaignId, creatorId, brandUserId, campaign, 
       {view === 'detail' && (
         <CampaignDetailModal
           campaign={campaign}
+          applied={applied}
           onApply={() => !applied && setView('apply')}
           onClose={() => setView('closed')}
         />
